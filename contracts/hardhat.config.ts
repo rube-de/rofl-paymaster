@@ -27,7 +27,15 @@ const config: HardhatUserConfig = {
       chainId: 23295
     }
   },
-  solidity: "0.8.28",
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+      },
+      viaIR: true,
+    },
+  },
 };
 
 export default config;
