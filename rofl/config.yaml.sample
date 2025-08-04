@@ -1,0 +1,66 @@
+app_name: rofl-paymaster
+version: 0.1.0
+debug: false
+base_chain:
+  rpc_urls:
+  - https://mainnet.base.org
+  - https://base-mainnet.public.blastapi.io
+  websocket_urls:
+  - wss://mainnet.base.org
+  - wss://base-mainnet.public.blastapi.io
+  chain_id: 8453
+  timeout: 30
+  max_retries: 3
+  retry_delay: 1.0
+sapphire_chain:
+  rpc_urls:
+  - https://sapphire.oasis.io
+  - https://1rpc.io/oasis/sapphire
+  websocket_urls:
+  - wss://sapphire.oasis.io/ws
+  chain_id: 23294
+  timeout: 30
+  max_retries: 3
+  retry_delay: 1.0
+vault_contract:
+  address: ${BASE_VAULT_CONTRACT_ADDRESS}
+  deployment_block: ${BASE_VAULT_DEPLOYMENT_BLOCK:0}
+paymaster_contract:
+  address: ${SAPPHIRE_PAYMASTER_CONTRACT_ADDRESS}
+  deployment_block: ${SAPPHIRE_PAYMASTER_DEPLOYMENT_BLOCK:0}
+blockhash_oracle:
+  address: ${BLOCKHASH_ORACLE_CONTRACT_ADDRESS}
+  deployment_block: ${BLOCKHASH_ORACLE_DEPLOYMENT_BLOCK:0}
+monitoring:
+  confirmation_blocks: 12
+  event_batch_size: 1000
+  poll_interval: 2.0
+  max_block_range: 10000
+  reconnect_delay: 5.0
+price_oracle:
+  contract:
+    address: ${PRICE_ORACLE_CONTRACT_ADDRESS}
+  cache_ttl: 300
+  price_bounds:
+    min: 0.01
+    max: 10.0
+  slippage_protection: 0.005
+  stale_threshold: 3600
+proof_generation:
+  cache_enabled: true
+  cache_ttl: 3600
+  generation_timeout: 30
+  validation_enabled: true
+  parallel_processing: true
+security:
+  private_key_env: PAYMASTER_PRIVATE_KEY
+  rate_limit_per_minute: 60
+  max_concurrent_processing: 10
+  audit_logging: true
+logging:
+  level: INFO
+  format: json
+  file_path: null
+  max_file_size: 104857600
+  backup_count: 5
+  correlation_id: true

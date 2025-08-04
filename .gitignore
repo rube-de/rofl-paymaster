@@ -82,6 +82,7 @@ deployments/
 .venv
 venv/
 virtualenv/
+my_env/
 
 # MyPy
 .mypy_cache/
