@@ -11,11 +11,22 @@ const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : {
 
 const config: HardhatUserConfig = {
   networks: {
+    hardhat: {
+      forking: {
+        url: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+        enabled: !!process.env.ALCHEMY_API_KEY
+      }
+    },
     "sapphire-localnet": { // Sapphire localnet docker
       url: "http://localhost:8545",
       chainId: 0x5afd,
       accounts,
     },    
+    baseMainnet: {
+      url: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts,
+      chainId: 8453
+    },
     baseSepolia: {
       url: process.env.BASE_SEPOLIA_RPC || "https://sepolia.base.org",
       accounts,
