@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { ReceiptProof } from "../hashi/prover/HashiProverStructs.sol";
+import { ReceiptProof } from "../../hashi/prover/HashiProverStructs.sol";
 
 /**
  * @title IPingReceiver

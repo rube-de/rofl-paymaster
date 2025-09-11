@@ -18,7 +18,7 @@ contract HashiProverUpgradeable is Initializable, OwnableUpgradeable {
     event ShoyuBashiSet(address shoyuBashi);
 
     function __HashiProverUpgradeable_init(address shoyuBashi_) public onlyInitializing {
-        __Ownable_init();
+        __Ownable_init(msg.sender);
         shoyuBashi = shoyuBashi_;
     }
 

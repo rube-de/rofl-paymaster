@@ -1,11 +1,19 @@
 {
   "name": "hardhat-project",
+  "scripts": {
+    "postinstall": "patch-package"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@oasisprotocol/sapphire-contracts": "^0.2.14",
     "@openzeppelin/contracts": "^5.4.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "hardhat": "^2.26.1",
+    "patch-package": "^8.0.0",
     "solidity-rlp": "^2.0.8"
+  },
+  "dependencies": {
+    "@eth-optimism/contracts-bedrock": "^0.17.3",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0"
   }
 }

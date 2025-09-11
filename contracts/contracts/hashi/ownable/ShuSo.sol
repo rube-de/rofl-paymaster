@@ -20,7 +20,7 @@ abstract contract ShuSo is IShuSho, OwnableUpgradeable {
 
     function init(bytes memory initParams) public initializer {
         (address _owner, IHashi _hashi) = abi.decode(initParams, (address, IHashi));
-        __Ownable_init();
+        __Ownable_init(_owner);
         _setHashi(_hashi);
         transferOwnership(_owner);
         emit Init(_owner, _hashi);

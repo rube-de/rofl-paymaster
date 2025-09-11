@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { HashiProver } from "./hashi/prover/HashiProver.sol";
-import { ReceiptProof } from "./hashi/prover/HashiProverStructs.sol";
+import { HashiProver } from "../hashi/prover/HashiProver.sol";
+import { ReceiptProof } from "../hashi/prover/HashiProverStructs.sol";
 import { RLPReader } from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol";
 import "./interfaces/IPingReceiver.sol";
 

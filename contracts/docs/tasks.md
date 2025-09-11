@@ -131,43 +131,43 @@ Note: Architecture now uses Hashi for cross-chain verification. Remote deposits 
   "description": "Implement PaymasterVault on the remote chain (Base) with deposit handling, asset management, circuit breakers, and Hashi-compatible event emission + header requests.",
   "type": "feature",
   "priority": "critical", 
-  "status": "pending",
+  "status": "completed",
   "dependencies": ["INFRA-002"],
   "subtasks": [
     {
       "id": "CORE-001-01",
       "description": "Implement UUPS upgradeable contract skeleton",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "CORE-001-02",
       "description": "Add deposit function with full validation logic",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "CORE-001-03", 
       "description": "Implement asset configuration management (CRUD)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "CORE-001-04",
       "description": "Add unique paymentId generation (Hashi-compatible)", 
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "CORE-001-05",
       "description": "Implement circuit breaker with daily volume limits",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "CORE-001-06",
       "description": "Emit PaymentInitiated event (payer, recipient, token indexed; amount in data)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "id": "CORE-001-07",
       "description": "Trigger BlockHeaderRequester with context(paymentId)",
-      "status": "pending"
+      "status": "completed"
     }
   ],
   "acceptance_criteria": [
