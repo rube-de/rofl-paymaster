@@ -6,7 +6,6 @@ services:
     image: ghcr.io/rube-de/rofl-relayer:latest
     platform: linux/amd64
     container_name: rofl_relayer
-    entrypoint: /bin/sh -c 'uv run python main.py'
     environment:
       # Python configuration
       PYTHONUNBUFFERED: 1  # Disable output buffering for immediate log visibility

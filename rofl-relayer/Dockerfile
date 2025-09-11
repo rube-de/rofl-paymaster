@@ -20,9 +20,8 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen
 
 # Copy source code
-COPY main.py ./
-COPY src/ ./src/
+COPY rofl_relayer/ ./rofl_relayer/
 COPY contracts/ ./contracts/
 
-# Run the relayer
-ENTRYPOINT ["uv", "run", "python", "main.py"]
+# Run the relayer using module execution
+ENTRYPOINT ["uv", "run", "python", "-m", "rofl_relayer"]

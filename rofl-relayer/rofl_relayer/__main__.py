@@ -4,7 +4,8 @@ import argparse
 import asyncio
 import logging
 import sys
-from src.rofl_relayer.relayer import ROFLRelayer
+
+from .relayer import ROFLRelayer
 
 # Set up root logger
 logger = logging.getLogger(__name__)
@@ -18,14 +19,14 @@ async def main():
         "--local",
         action="store_true",
         default=False,
-        help="Run in local mode without ROFL utilities"
+        help="Run in local mode without ROFL utilities",
     )
     args = parser.parse_args()
-    
+
     logger.info(f"=== ROFL Relayer Starting {'(LOCAL MODE)' if args.local else ''} ===")
-    
+
     relayer = None
-    
+
     try:
         # Create relayer using factory method
         relayer = ROFLRelayer.from_env(local_mode=args.local)
