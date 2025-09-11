@@ -1,3 +1,0 @@
-[submodule "contracts/contracts/liquefaction"]
-	path = contracts/contracts/liquefaction
-	url = https://github.com/key-encumbrance/liquefaction.git
