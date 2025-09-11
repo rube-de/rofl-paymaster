@@ -3,7 +3,6 @@ pragma solidity 0.8.28;
 
 import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { PausableUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
@@ -23,7 +22,6 @@ import { SapphireTypes } from "./libraries/SapphireTypes.sol";
 contract CrossChainPaymaster is
     Initializable,
     UUPSUpgradeable,
-    OwnableUpgradeable,
     PausableUpgradeable,
     ReentrancyGuardUpgradeable,
     HashiProverUpgradeable
@@ -98,16 +96,21 @@ contract CrossChainPaymaster is
         address _shoyuBashi,
         SapphireTypes.DistributionLimits memory _limits
     ) external initializer {
-        __Ownable_init(_owner);
-        __Pausable_init();
+        // Initialize parents in linearized order: Reentrancy -> HashiProver -> (others)
         __ReentrancyGuard_init();
-        __UUPSUpgradeable_init();
         __HashiProverUpgradeable_init(_shoyuBashi);
+        __Pausable_init();
+        __UUPSUpgradeable_init();
 
         if (_priceOracle == address(0)) revert InvalidOracle();
         priceOracle = IROFLPriceOracle(_priceOracle);
         roflOperator = _operator;
         limits = _limits;
+
+        // Transfer ownership to requested owner if different
+        if (_owner != owner()) {
+            _transferOwnership(_owner);
+        }
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
@@ -146,7 +149,7 @@ contract CrossChainPaymaster is
 
     function setDistributionLimits(
         uint128 dailyLimit,
-        uint64 perTxLimit,
+        uint128 perTxLimit,
         bool enabled
     ) external onlyOwner {
         limits.dailyLimit = dailyLimit;

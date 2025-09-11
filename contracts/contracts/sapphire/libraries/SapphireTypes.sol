@@ -68,10 +68,10 @@ library SapphireTypes {
     struct DistributionLimits {
         uint128 dailyLimit;     // 128 bits - daily ROSE distribution limit
         uint128 currentDaily;   // 128 bits - current daily distribution
-        uint64 perTxLimit;      // 64 bits - per-transaction limit
+        uint128 perTxLimit;      // 128 bits - per-transaction limit
         uint32 lastResetDay;    // 32 bits - last reset day
         bool enabled;           // 1 bit - whether limits are enforced
-        // Total: 128 + 128 + 64 + 32 + 1 = 353 bits (requires 2 slots)
+        // Total: 128 + 128 + 128 + 32 + 1 = 417 bits (requires 3 slots)
     }
 
     /**
