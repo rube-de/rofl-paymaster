@@ -9,6 +9,11 @@ pragma solidity ^0.8.28;
 contract BlockHeaderRequester {
     
     /**
+     * @notice Custom error for when a block has already been requested
+     */
+    error BlockAlreadyRequested(bytes32 requestId);
+    
+    /**
      * @notice Emitted when a block header is requested
      * @param chainId The chain ID of the source blockchain
      * @param blockNumber The block number being requested
@@ -43,7 +48,7 @@ contract BlockHeaderRequester {
         bytes32 requestId = keccak256(abi.encode(chainId, blockNumber));
         
         // Simple deduplication to prevent redundant requests
-        require(!requestedBlocks[requestId], "Block already requested");
+        require(!requestedBlocks[requestId], BlockAlreadyRequested(requestId));
         
         // Mark as requested
         requestedBlocks[requestId] = true;

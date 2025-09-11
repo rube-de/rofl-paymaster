@@ -168,6 +168,16 @@ Note: Architecture now uses Hashi for cross-chain verification. Remote deposits 
       "id": "CORE-001-07",
       "description": "Trigger BlockHeaderRequester with context(paymentId)",
       "status": "completed"
+    },
+    {
+      "id": "CORE-001-08",
+      "description": "Add owner withdrawal function to move deposited ERC20s to treasury",
+      "status": "completed"
+    },
+    {
+      "id": "CORE-001-09",
+      "description": "Emit TokenWithdrawn event and restrict via onlyOwner + nonReentrant",
+      "status": "completed"
     }
   ],
   "acceptance_criteria": [
@@ -177,7 +187,9 @@ Note: Architecture now uses Hashi for cross-chain verification. Remote deposits 
     "paymentId derivation is deterministic and unique per (blockNumber, txIndex, logIndex)",
     "PaymentInitiated event emitted with payer, recipient, token, amount, paymentId",
     "BlockHeaderRequester emits request with context=paymentId",
-    "Reentrancy protection prevents attacks"
+    "Reentrancy protection prevents attacks",
+    "Owner can withdraw ERC20 balances to treasury using withdrawToken()",
+    "TokenWithdrawn event emitted on successful owner withdrawals"
   ],
   "testing_requirements": "Unit tests for all functions, edge cases, and security scenarios",
   "estimated_hours": 24

@@ -79,6 +79,9 @@ contract PaymasterVault is
     error AmountAboveMaximum();
     error InvalidRecipient();
     error CircuitBreakerTriggered();
+    error ZeroAddress();
+    error InvalidAmount();
+    error InsufficientBalance(uint256 available, uint256 required);
 
     // ---------------------------------------------------------------------
     // Initialization / Upgradeability
@@ -171,7 +174,10 @@ contract PaymasterVault is
      */
     function setTokenEnabled(IERC20 token, bool enabled) external onlyOwner {
         RemoteTypes.AssetConfig memory cfg = _assetConfigs[token];
-        if (cfg.minAmount == 0 && cfg.maxAmount == 0) revert UnsupportedToken();
+        require(
+            cfg.minAmount != 0 || cfg.maxAmount != 0 || cfg.enabled,
+            UnsupportedToken()
+        );
         _assetConfigs[token].enabled = enabled;
         emit TokenConfigUpdated(address(token), uint256(cfg.minAmount), uint256(cfg.maxAmount), enabled);
     }
@@ -225,17 +231,17 @@ contract PaymasterVault is
         uint256 amount,
         address recipient
     ) external override nonReentrant whenNotPaused returns (uint256 depositId) {
-        if (recipient == address(0)) revert InvalidRecipient();
+        require(recipient != address(0), InvalidRecipient());
 
         // Validate token support and bounds
         RemoteTypes.AssetConfig memory cfg = _assetConfigs[token];
-        if (!cfg.enabled) revert UnsupportedToken();
-        if (amount < uint256(cfg.minAmount)) revert AmountBelowMinimum();
-        if (amount > uint256(cfg.maxAmount)) revert AmountAboveMaximum();
+        require(cfg.enabled, UnsupportedToken());
+        require(amount >= uint256(cfg.minAmount), AmountBelowMinimum());
+        require(amount <= uint256(cfg.maxAmount), AmountAboveMaximum());
 
         // Enforce circuit breaker (daily limit) per token
         RemoteTypes.CircuitBreaker memory br = _tokenCircuitBreaker[token];
-        if (RemoteTypes.shouldTriggerCircuitBreaker(br, uint128(amount))) revert CircuitBreakerTriggered();
+        require(!RemoteTypes.shouldTriggerCircuitBreaker(br, uint128(amount)), CircuitBreakerTriggered());
 
         // Effects: compute identifiers and update accounting BEFORE external calls
         uint256 userNonce = _nonces[msg.sender];
@@ -281,6 +287,23 @@ contract PaymasterVault is
         }
 
         return depositId;
+    }
+
+    /**
+     * @notice Owner withdrawal of accumulated ERC20 tokens to treasury
+     * @dev nonReentrant to guard against ERC777-style callbacks
+     */
+    function withdrawToken(
+        IERC20 token,
+        address to,
+        uint256 amount
+    ) external override onlyOwner nonReentrant {
+        require(to != address(0), ZeroAddress());
+        require(amount != 0, InvalidAmount());
+        uint256 bal = token.balanceOf(address(this));
+        require(amount <= bal, InsufficientBalance(bal, amount));
+        token.safeTransfer(to, amount);
+        emit TokenWithdrawn(address(token), to, amount, msg.sender);
     }
 
     // ---------------------------------------------------------------------
