@@ -8,6 +8,8 @@
 
 Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contracts enabling trustless USDC → ROSE bridging between Base and Oasis Sapphire chains.
 
+Note: Architecture now uses Hashi for cross-chain verification. Remote deposits emit Hashi-verifiable events and trigger a `BlockHeaderRequester` so header oracles can publish headers to Sapphire's ShoyuBashi. On Sapphire, proofs are verified with HashiProver similar to the PingSender/PingReceiver example.
+
 ## Task Categories
 
 - **Infrastructure**: Development environment and tooling setup
@@ -53,7 +55,12 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     },
     {
       "id": "INFRA-001-05",
-      "description": "Install solidity-rlp package for RLP decoding",
+      "description": "Install Optimism Bedrock libs (RLPReader, SecureMerkleTrie)",
+      "status": "completed"
+    },
+    {
+      "id": "INFRA-001-06",
+      "description": "Add Hashi prover deps (IShoyuBashi, HashiProver)",
       "status": "completed"
     }
   ],
@@ -121,7 +128,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
 {
   "id": "CORE-001",
   "title": "PaymasterVault Implementation",
-  "description": "Implement complete PaymasterVault contract for Base chain with deposit handling, asset management, and circuit breakers.",
+  "description": "Implement PaymasterVault on the remote chain (Base) with deposit handling, asset management, circuit breakers, and Hashi-compatible event emission + header requests.",
   "type": "feature",
   "priority": "critical", 
   "status": "pending",
@@ -144,7 +151,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     },
     {
       "id": "CORE-001-04",
-      "description": "Add unique deposit ID generation algorithm", 
+      "description": "Add unique paymentId generation (Hashi-compatible)", 
       "status": "pending"
     },
     {
@@ -154,16 +161,22 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     },
     {
       "id": "CORE-001-06",
-      "description": "Add comprehensive event emission",
+      "description": "Emit PaymentInitiated event (payer, recipient, token indexed; amount in data)",
+      "status": "pending"
+    },
+    {
+      "id": "CORE-001-07",
+      "description": "Trigger BlockHeaderRequester with context(paymentId)",
       "status": "pending"
     }
   ],
   "acceptance_criteria": [
-    "Deposit function processes valid USDC deposits",
+    "Deposit function processes valid deposits",
     "Asset configuration enforces min/max amounts",
     "Daily limits prevent excessive volume",
-    "Deposit IDs are unique and deterministic",
-    "Events contain all required data for monitoring",
+    "paymentId derivation is deterministic and unique per (blockNumber, txIndex, logIndex)",
+    "PaymentInitiated event emitted with payer, recipient, token, amount, paymentId",
+    "BlockHeaderRequester emits request with context=paymentId",
     "Reentrancy protection prevents attacks"
   ],
   "testing_requirements": "Unit tests for all functions, edge cases, and security scenarios",
@@ -175,7 +188,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
 {
   "id": "CORE-002", 
   "title": "CrossChainPaymaster Implementation",
-  "description": "Implement CrossChainPaymaster contract for Sapphire chain with proof verification and ROSE distribution.",
+  "description": "Implement CrossChainPaymaster on Sapphire using HashiProver receipt proofs to verify PaymentInitiated events and distribute ROSE.",
   "type": "feature",
   "priority": "critical",
   "status": "pending", 
@@ -198,29 +211,34 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     },
     {
       "id": "CORE-002-04",
-      "description": "Add message execution framework with whitelisting",
+      "description": "Integrate HashiProver.verifyForeignEvent for receipt proofs",
       "status": "pending"
     },
     {
       "id": "CORE-002-05", 
-      "description": "Implement duplicate deposit prevention",
+      "description": "Decode PaymentInitiated log (RLP) and derive paymentId",
       "status": "pending"
     },
     {
       "id": "CORE-002-06",
+      "description": "Implement duplicate payment prevention via paymentId",
+      "status": "pending"
+    },
+    {
+      "id": "CORE-002-07",
       "description": "Add role-based access control (Owner, ROFL Operator)",
       "status": "pending"
     }
   ],
   "acceptance_criteria": [
-    "Processes deposits with valid proof data",
+    "Processes payments with valid Hashi receipt proofs",
     "Distributes correct ROSE amounts to recipients", 
-    "Executes messages on whitelisted targets only",
-    "Prevents duplicate deposit processing",
+    "Executes messages on whitelisted targets only (if applicable)",
+    "Prevents duplicate payment processing via paymentId",
     "Enforces role-based permissions correctly",
     "Circuit breaker limits daily ROSE distributions"
   ],
-  "testing_requirements": "Unit tests for deposit processing, access control, and message execution",
+  "testing_requirements": "Unit tests for proof verification (Hashi), access control, and ROSE distribution",
   "estimated_hours": 20
 }
 ```
@@ -228,8 +246,8 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
 ```json
 {
   "id": "CORE-003",
-  "title": "Proof Verification Integration", 
-  "description": "Integrate ProvethVerifier for Merkle Patricia Trie proof validation and event extraction from Base chain transactions.",
+  "title": "Hashi Proof Integration", 
+  "description": "Integrate HashiProver for receipt proof validation and event extraction from remote chain transactions.",
   "type": "feature",
   "priority": "critical",
   "status": "pending",
@@ -237,41 +255,37 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
   "subtasks": [
     {
       "id": "CORE-003-01",
-      "description": "Integrate ProvethVerifier contract from liquefaction submodule",
+      "description": "Integrate HashiProver + HashiProverLib (verifyForeignEvent)",
       "status": "pending"
     },
     {
       "id": "CORE-003-02",
-      "description": "Implement transaction inclusion verification logic",
+      "description": "Implement ReceiptProof handling (blockHeader + ancestry)",
       "status": "pending"
     },
     {
       "id": "CORE-003-03",
-      "description": "Add RLP decoding for block headers and receipts",
+      "description": "Add RLP decoding for PaymentInitiated topics + data",
       "status": "pending"
     },
     {
       "id": "CORE-003-04",
-      "description": "Implement PaymasterDeposit event extraction and validation",
+      "description": "Derive paymentId = keccak(chainId, vault, blockNumber, txIndex, logIndex)",
       "status": "pending"
     },
     {
       "id": "CORE-003-05",
-      "description": "Add block hash verification against oracle",
-      "status": "pending"
-    },
-    {
-      "id": "CORE-003-06",
       "description": "Optimize gas consumption for proof verification",
       "status": "pending"
     }
   ],
   "acceptance_criteria": [
-    "Valid Merkle proofs accepted and verified correctly",
+    "Valid Hashi receipt proofs accepted and verified correctly",
     "Invalid proofs rejected with appropriate errors", 
-    "PaymasterDeposit events extracted accurately from receipts",
-    "Block hash validation prevents fake proofs",
-    "Gas consumption under 250k for proof verification",
+    "PaymentInitiated events extracted accurately from receipts",
+    "Event decoding pattern aligns with PingReceiver (see rofl-relayer/abis/PingReceiver.json)",
+    "ShoyuBashi header source used for verification",
+    "Gas consumption within target budget for proof verification",
     "Chain ID validation prevents cross-chain replay attacks"
   ],
   "testing_requirements": "Comprehensive proof validation tests including malformed proofs and edge cases",
@@ -332,8 +346,8 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
 ```json
 {
   "id": "ORACLE-002",
-  "title": "Block Hash Oracle Integration", 
-  "description": "Integrate ITrivialBlockHashOracle for cross-chain block hash verification to validate proof authenticity.",
+  "title": "Hashi Header Integration", 
+  "description": "Integrate BlockHeaderRequester on the remote chain and ensure headers are posted to ShoyuBashi for Sapphire verification.",
   "type": "integration",
   "priority": "high",
   "status": "pending",
@@ -341,32 +355,32 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
   "subtasks": [
     {
       "id": "ORACLE-002-01",
-      "description": "Integrate ITrivialBlockHashOracle interface",
+      "description": "Wire PaymasterVault to call BlockHeaderRequester.requestBlockHeader",
       "status": "pending"
     },
     {
       "id": "ORACLE-002-02",
-      "description": "Add multi-chain block hash validation",
+      "description": "Include paymentId in request context for correlation",
       "status": "pending"
     },
     {
       "id": "ORACLE-002-03",
-      "description": "Implement block hash freshness checks",
+      "description": "Configure CrossChainPaymaster with ShoyuBashi address",
       "status": "pending"
     },
     {
       "id": "ORACLE-002-04", 
-      "description": "Add fallback handling for missing block hashes",
+      "description": "Handle missing header cases (graceful revert + retry)",
       "status": "pending"
     }
   ],
   "acceptance_criteria": [
-    "Block hashes validated against oracle data",
-    "Multiple chain IDs supported correctly", 
-    "Missing block hashes handled gracefully",
-    "Block hash freshness prevents old proof replay"
+    "Header requests emitted with correct chainId, blockNumber, context",
+    "ShoyuBashi configured and used for header validation", 
+    "Missing headers handled gracefully (explicit errors)",
+    "Header ancestry supported via ReceiptProof.ancestralBlockHeaders"
   ],
-  "testing_requirements": "Block hash validation tests and missing data scenarios",
+  "testing_requirements": "Header request emission tests and Hashi header availability scenarios",
   "estimated_hours": 12
 }
 ```
@@ -446,7 +460,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     },
     {
       "id": "TEST-001-02",
-      "description": "Create CrossChainPaymaster unit tests (proof verification, ROSE distribution)",
+      "description": "Create CrossChainPaymaster unit tests (Hashi proof verification, ROSE distribution)",
       "status": "pending"
     },
     {
@@ -495,7 +509,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
   "subtasks": [
     {
       "id": "TEST-002-01",
-      "description": "Create end-to-end deposit flow tests (USDC → ROSE)",
+      "description": "Create end-to-end deposit flow tests (USDC → ROSE) with Hashi proof verification",
       "status": "pending"
     },
     {
@@ -510,7 +524,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     },
     {
       "id": "TEST-002-04",
-      "description": "Add oracle integration and failure scenario tests", 
+      "description": "Add Hashi header availability and failure scenario tests", 
       "status": "pending"
     },
     {
@@ -520,10 +534,11 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     }
   ],
   "acceptance_criteria": [
-    "Complete deposit workflow executes successfully",
+    "Complete deposit workflow executes successfully via Hashi proofs",
+    "BlockHeaderRequester emits and headers become available in ShoyuBashi",
     "Multiple simultaneous deposits handled correctly",
     "Message execution works with various payloads",
-    "Oracle failures handled gracefully without system failure",
+    "Header unavailability handled gracefully without system failure",
     "Circuit breakers activate at correct thresholds"
   ],
   "testing_requirements": "End-to-end workflow validation with realistic scenarios",
@@ -712,7 +727,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
     },
     {
       "id": "CONFIG-001-04", 
-      "description": "Set block hash oracle address",
+      "description": "Configure ShoyuBashi (Hashi) contract address on Sapphire",
       "status": "pending"
     },
     {
@@ -734,7 +749,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
   "acceptance_criteria": [
     "USDC configuration accepts $10-$10k deposits",
     "Base chain configuration allows proof processing",
-    "Oracle addresses set and connectivity verified",
+    "ShoyuBashi and price oracle addresses set and connectivity verified",
     "ROFL operator can process deposits",
     "Daily limits configured appropriately",
     "Initial ROSE funding sufficient for operations"
@@ -758,7 +773,7 @@ Comprehensive task breakdown for implementing Cross-Chain Paymaster smart contra
   "subtasks": [
     {
       "id": "OPS-001-01",
-      "description": "Set up event monitoring and indexing system",
+      "description": "Set up event monitoring and indexing (PaymentInitiated, BlockHeaderRequested, DepositVerified)",
       "status": "pending"
     },
     {
@@ -801,9 +816,9 @@ graph TD
     A[INFRA-001: Environment Setup] --> B[INFRA-002: Interface Definitions]
     B --> C[CORE-001: PaymasterVault]
     C --> D[CORE-002: CrossChainPaymaster]
-    D --> E[CORE-003: Proof Verification]
+    D --> E[CORE-003: Hashi Proof Integration]
     E --> F[ORACLE-001: Price Oracle]
-    F --> G[ORACLE-002: Block Hash Oracle]
+    F --> G[ORACLE-002: Hashi Header Integration]
     G --> H[SEC-001: Security Controls]
     H --> I[TEST-001: Unit Tests]
     I --> J[TEST-002: Integration Tests]
@@ -820,7 +835,7 @@ graph TD
 **Critical Path**: INFRA-001 → INFRA-002 → CORE-001 → CORE-002 → CORE-003 → SEC-001 → TEST-003 → DEPLOY-001 → CONFIG-001
 
 **High-Risk Tasks**:
-- CORE-003: Proof Verification Integration (32 hours) - Most complex component
+- CORE-003: Hashi Proof Integration (32 hours) - Most complex component
 - TEST-003: Security Testing & Fuzzing (36 hours) - Critical for production readiness
 - SEC-001: Security Controls (28 hours) - Essential for safe operations
 
@@ -828,7 +843,7 @@ graph TD
 
 ### Functional Requirements
 - [ ] 100% proof verification accuracy
-- [ ] Zero duplicate deposits processed  
+- [ ] Zero duplicate payments processed  
 - [ ] <1% message execution failure rate
 - [ ] 99.9% system uptime
 
