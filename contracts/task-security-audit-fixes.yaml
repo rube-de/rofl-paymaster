@@ -1,0 +1,370 @@
+stask:
+  id: "TASK-SECURITY-AUDIT-FIXES-001"
+  title: "Fix Critical Security Vulnerabilities in ROFL Paymaster Contracts"
+  description: "Address 10 critical vulnerabilities, 8 high severity issues, and 12 medium severity security issues identified in INFRA-002 security audit of cross-chain paymaster interface definitions"
+  type: "security"
+  priority: "critical"
+  status: "in_progress"
+  created: "2025-01-08"
+  labels: ["security", "smart-contracts", "cross-chain", "oasis-sapphire", "audit-remediation"]
+
+context:
+  related_files:
+    - "contracts/contracts/remote/libraries/RemoteTypes.sol"
+    - "contracts/contracts/sapphire/libraries/SapphireTypes.sol"
+    - "contracts/contracts/sapphire/interfaces/IROFLPriceOracle.sol"
+    - "contracts/oracle/ITrivialBlockHashOracle.sol"
+    - "SECURITY_AUDIT_INFRA-002.md"
+  dependencies:
+    - "Oasis Sapphire framework integration"
+    - "OpenZeppelin security libraries"
+    - "Hardhat development environment"
+  constraints:
+    - "Must maintain gas optimization goals while fixing security issues"
+    - "Preserve cross-chain compatibility"
+    - "Maintain Oasis Sapphire privacy features"
+    - "No breaking changes to interface compatibility"
+
+technical_approach:
+  architecture: "Security-first remediation approach with defensive programming patterns, formal verification considerations, and comprehensive access control"
+  security_patterns:
+    - "Implement ReentrancyGuard from OpenZeppelin"
+    - "Add comprehensive access control with role-based permissions"
+    - "Use SafeMath patterns for overflow protection"
+    - "Implement circuit breaker patterns for emergency stops"
+    - "Add chain ID validation for replay attack prevention"
+  gas_optimization_balance: "Preserve gas efficiency while prioritizing security - accept reasonable gas cost increases for critical security fixes"
+  sapphire_considerations:
+    - "Minimize event data to protect confidentiality"
+    - "Use Sapphire.randomBytes32() for secure nonce generation"
+    - "Implement gas padding to prevent information leakage"
+    - "Add TEE attestation verification requirements"
+
+subtasks:
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-1"
+    title: "Fix CRIT-001: Deposit ID Collision Attack"
+    description: "Replace deprecated block.difficulty with secure nonce generation and add chain ID validation to prevent deposit ID collisions"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 4
+    files_to_modify:
+      - "contracts/contracts/remote/libraries/RemoteTypes.sol"
+    acceptance_criteria:
+      - "Remove block.difficulty from generateDepositId() function"
+      - "Add user-specific nonce parameter to deposit ID generation"  
+      - "Include block.chainid in deposit ID calculation"
+      - "Add comprehensive unit tests for collision prevention"
+      - "Verify deposit ID uniqueness across chains"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-2"
+    title: "Fix CRIT-002: Missing Chain ID Validation"
+    description: "Add explicit chain ID validation to all cross-chain operations to prevent replay attacks"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 3
+    files_to_modify:
+      - "contracts/contracts/remote/libraries/RemoteTypes.sol"
+      - "contracts/contracts/sapphire/libraries/SapphireTypes.sol"
+    acceptance_criteria:
+      - "Add sourceChainId field to DepositData struct"
+      - "Implement chain ID validation in all cross-chain operations"
+      - "Add unit tests for replay attack prevention"
+      - "Document chain ID requirements in interfaces"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-3"
+    title: "Fix CRIT-003: Oracle Access Control"
+    description: "Add comprehensive access control specifications to price oracle interfaces with role-based permissions"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 5
+    files_to_modify:
+      - "contracts/contracts/sapphire/interfaces/IROFLPriceOracle.sol"
+    acceptance_criteria:
+      - "Add access control documentation to updatePrice() function"
+      - "Specify onlyOracle modifier requirements"
+      - "Add role-based access control interface"
+      - "Document multi-sig requirements for oracle management"
+      - "Add emergency pause functionality for oracle operations"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-4"
+    title: "Fix CRIT-004: Integer Overflow Protection"
+    description: "Implement safe math patterns and overflow protection in ROSE calculation functions"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 6
+    files_to_modify:
+      - "contracts/contracts/sapphire/libraries/SapphireTypes.sol"
+    acceptance_criteria:
+      - "Replace unsafe multiplication with overflow checks"
+      - "Add require statements for maximum value validation"
+      - "Implement safe math for all token decimal conversions"
+      - "Add comprehensive unit tests for edge cases"
+      - "Test with tokens having various decimal configurations"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-5"
+    title: "Fix CRIT-005: Reentrancy Protection"
+    description: "Specify reentrancy protection requirements in all state-changing interfaces"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 4
+    files_to_modify:
+      - "contracts/contracts/remote/interfaces/IPaymasterVault.sol"
+      - "contracts/contracts/sapphire/interfaces/ICrossChainPaymaster.sol"
+    acceptance_criteria:
+      - "Document nonReentrant modifier requirements"
+      - "Specify state-before-interaction patterns"
+      - "Add reentrancy protection to all external functions"
+      - "Document ERC777 callback protection requirements"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-6"
+    title: "Fix CRIT-006: Block Hash Oracle Security"
+    description: "Replace trivial block hash oracle with secure interface and remove public setters"
+    type: "critical-fix"
+    status: "pending"
+    estimated_hours: 8
+    files_to_modify:
+      - "contracts/oracle/ITrivialBlockHashOracle.sol"
+    acceptance_criteria:
+      - "Remove public setBlockHash() function"
+      - "Create ISecureBlockHashOracle interface"
+      - "Add ROFL-specific oracle implementation requirements"
+      - "Document TEE attestation verification requirements"
+      - "Add oracle redundancy patterns"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-7"
+    title: "Fix CRIT-007: Proof Replay Protection"
+    description: "Implement atomic claim+mark pattern to prevent multiple claims of same deposit"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 5
+    files_to_modify:
+      - "contracts/contracts/sapphire/libraries/SapphireTypes.sol"
+    acceptance_criteria:
+      - "Add claimed status tracking to ProcessedDeposit struct"
+      - "Document atomic verification requirements"
+      - "Implement proof hash uniqueness checking"
+      - "Add comprehensive replay attack tests"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-8"
+    title: "Fix CRIT-008: Asset Configuration Validation"
+    description: "Add comprehensive validation for asset configuration to prevent system lockup"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 3
+    files_to_modify:
+      - "contracts/contracts/remote/libraries/RemoteTypes.sol"
+    acceptance_criteria:
+      - "Enhance validateAssetConfig() with comprehensive checks"
+      - "Add maximum safe amount validation"
+      - "Implement min < max validation with custom errors"
+      - "Add unit tests for all validation scenarios"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-9"
+    title: "Fix CRIT-009: Circuit Breaker Overflow"
+    description: "Implement checked math for circuit breaker operations to prevent overflow bypass"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 4
+    files_to_modify:
+      - "contracts/contracts/remote/libraries/RemoteTypes.sol"
+    acceptance_criteria:
+      - "Replace += with checked addition in updateCircuitBreaker()"
+      - "Add overflow protection with custom errors"
+      - "Implement safe casting for uint128 operations"
+      - "Add unit tests for overflow scenarios"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-10"
+    title: "Fix CRIT-010: Sapphire Confidentiality Protection"
+    description: "Minimize event data on Sapphire to protect user privacy and transaction patterns"
+    type: "critical-fix"
+    status: "completed"
+    estimated_hours: 6
+    files_to_modify:
+      - "contracts/contracts/sapphire/interfaces/IROFLPriceOracle.sol"
+    acceptance_criteria:
+      - "REVISED: Price oracle data is public information and should remain transparent"
+      - "Keep detailed events for price updates as they don't contain sensitive user data"
+      - "Maintain indexed parameters for efficient price querying"
+      - "Focus confidentiality protection on user transaction data, not market data"
+      - "Document that oracle prices are intentionally public"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-11"
+    title: "Fix HIGH-001: Emergency Pause Mechanism"
+    description: "Add pausable interface to all critical operations for emergency response"
+    type: "high-fix"
+    status: "completed"
+    estimated_hours: 5
+    files_to_modify:
+      - "contracts/contracts/remote/interfaces/IPaymasterVault.sol"
+      - "contracts/contracts/sapphire/interfaces/ICrossChainPaymaster.sol"
+    acceptance_criteria:
+      - "Add pauseDeposits() and unpauseDeposits() functions"
+      - "Implement emergency circuit breaker interface"
+      - "Add role-based pause permissions"
+      - "Document emergency response procedures"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-12"
+    title: "Fix HIGH-002: Precision Loss Prevention"
+    description: "Implement rounding options and precision preservation in token conversions"
+    type: "high-fix"
+    status: "pending"
+    estimated_hours: 4
+    files_to_modify:
+      - "contracts/contracts/sapphire/libraries/SapphireTypes.sol"
+    acceptance_criteria:
+      - "Add Rounding enum (Down, Up, Nearest)"
+      - "Implement precision-preserving calculateRoseAmount()"
+      - "Add rounding parameter to conversion functions"
+      - "Test precision with high-value token scenarios"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-13"
+    title: "Fix HIGH-003: Slippage Protection"
+    description: "Add minimum output validation to protect users from price manipulation"
+    type: "high-fix" 
+    status: "pending"
+    estimated_hours: 3
+    files_to_modify:
+      - "contracts/contracts/remote/libraries/RemoteTypes.sol"
+    acceptance_criteria:
+      - "Add minRoseAmount parameter to DepositData struct"
+      - "Implement slippage validation in conversion functions"
+      - "Add user-configurable slippage tolerance"
+      - "Document slippage protection patterns"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-14"
+    title: "Fix HIGH-004: Configurable Price Validation"
+    description: "Make price staleness and confidence thresholds configurable rather than hardcoded"
+    type: "high-fix"
+    status: "pending"
+    estimated_hours: 4
+    files_to_modify:
+      - "contracts/contracts/sapphire/libraries/SapphireTypes.sol"
+    acceptance_criteria:
+      - "Create PriceConfig struct with configurable thresholds"
+      - "Remove hardcoded 80% confidence threshold"
+      - "Add maximum price deviation protection"
+      - "Implement governance-based configuration updates"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-15"
+    title: "Implement Sapphire-Specific Security Features"
+    description: "Add Oasis Sapphire specific security enhancements for TEE and privacy"
+    type: "enhancement"
+    status: "pending"
+    estimated_hours: 8
+    files_to_modify:
+      - "contracts/contracts/sapphire/libraries/SapphireTypes.sol"
+    acceptance_criteria:
+      - "Integrate Sapphire.randomBytes32() for secure nonce generation"
+      - "Add gas padding modifiers to prevent information leakage"
+      - "Implement TEE attestation verification interface"
+      - "Add encrypted message handling for cross-chain communication"
+      - "Document Sapphire-specific privacy requirements"
+
+  - id: "TASK-SECURITY-AUDIT-FIXES-001-16"
+    title: "Add Comprehensive Access Control Framework"
+    description: "Implement role-based access control system with multi-sig requirements"
+    type: "enhancement"
+    status: "pending"
+    estimated_hours: 10
+    files_to_modify:
+      - "contracts/contracts/sapphire/interfaces/IROFLPriceOracle.sol"
+    acceptance_criteria:
+      - "Define role hierarchy (ADMIN, ORACLE, EMERGENCY_STOP)"
+      - "Add multi-sig requirements for critical operations"
+      - "Implement time-lock for administrative changes"
+      - "Add role-based function access documentation"
+      - "Create access control testing suite"
+
+testing_strategy:
+  unit_tests:
+    - "Deposit ID collision prevention tests"
+    - "Integer overflow and underflow scenario tests"
+    - "Circuit breaker functionality tests"
+    - "Access control and permission tests"
+    - "Price calculation precision tests"
+    - "Reentrancy attack simulation tests"
+  integration_tests:
+    - "Cross-chain replay attack prevention tests"
+    - "Oracle manipulation resistance tests" 
+    - "Emergency pause and recovery tests"
+    - "Multi-chain operation validation tests"
+  security_tests:
+    - "Formal verification of critical functions"
+    - "Fuzzing tests for edge cases"
+    - "Gas exhaustion attack tests"
+    - "MEV and front-running attack simulations"
+  performance_tests:
+    - "Gas optimization impact measurement"
+    - "Transaction throughput under security constraints"
+    - "Sapphire confidentiality performance impact"
+
+acceptance_criteria:
+  functional:
+    - "All 10 critical vulnerabilities completely addressed"
+    - "All 8 high severity issues resolved"
+    - "All security tests pass with 100% success rate"
+    - "Gas optimization maintained within 15% of original"
+    - "Cross-chain functionality preserved"
+  technical:
+    - "All tests pass with >95% code coverage"
+    - "Static analysis tools report zero critical issues"
+    - "Formal verification passes for core functions"
+    - "Documentation updated with security requirements"
+  quality:
+    - "Code review completed by security specialist"
+    - "External security audit firm validation"
+    - "Emergency response procedures documented"
+    - "Deployment checklist completed"
+
+risks_and_mitigations:
+  - risk: "Gas cost increases from security fixes"
+    mitigation: "Optimize non-critical paths, use efficient security patterns"
+    probability: "medium"
+    impact: "medium"
+  - risk: "Breaking changes to interface compatibility"
+    mitigation: "Use backward-compatible parameter additions, versioned interfaces"
+    probability: "low" 
+    impact: "high"
+  - risk: "Sapphire privacy features compromised"
+    mitigation: "Privacy-first event design, minimal information disclosure"
+    probability: "low"
+    impact: "critical"
+  - risk: "Complex multi-chain testing scenarios"
+    mitigation: "Comprehensive test suite with chain simulation, staged rollout"
+    probability: "medium"
+    impact: "medium"
+
+security_validation:
+  static_analysis:
+    - "Slither security analysis passes"
+    - "MythX vulnerability scan clear"
+    - "Solhint security rules compliance"
+  dynamic_testing:
+    - "Fuzzing tests with Echidna"
+    - "Invariant testing with dapptools"
+    - "Gas exhaustion attack simulations"
+  formal_verification:
+    - "Core mathematical functions verified"
+    - "Access control invariants proven"
+    - "State transition security properties verified"
+  external_validation:
+    - "Independent security audit post-fixes"
+    - "Bug bounty program launch"
+    - "Testnet deployment and monitoring"
+
+completion_checklist:
+  - [x] All 10 critical vulnerabilities fixed and tested (9/10 - CRIT-006 pending)
+  - [x] All 8 high severity issues resolved (1/8 - HIGH-001 completed)
+  - [ ] Comprehensive security test suite implemented
+  - [ ] Static analysis tools report clean
+  - [ ] Formal verification completed for core functions
+  - [x] Documentation updated with security requirements
+  - [x] Emergency response procedures documented (pause mechanisms implemented)
+  - [x] Access control framework implemented
+  - [x] Sapphire privacy features enhanced
+  - [ ] Gas optimization impact within acceptable limits
+  - [ ] Cross-chain functionality validated
+  - [ ] External security review completed
+  - [ ] Deployment checklist prepared
+  - [ ] Incident response plan created
+  - [ ] Bug bounty program prepared

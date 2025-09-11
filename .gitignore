@@ -65,13 +65,11 @@ lerna-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
 
 # Temporary files
 tmp/
 temp/
-
-# Docker
-.dockerignore
 
 # Blockchain specific
 .openzeppelin/
@@ -98,5 +96,5 @@ dmypy.json
 # wake
 /.wake/
 
-# Claude Code local configurations
-CLAUDE.local.md
+# local configs
+*.local.*
