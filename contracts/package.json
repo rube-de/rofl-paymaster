@@ -12,6 +12,7 @@
     "@openzeppelin/upgrades-core": "^1.44.1",
     "dotenv": "^17.2.2",
     "hardhat": "^2.26.1",
+    "hardhat-switch-network": "^1.2.0",
     "patch-package": "^8.0.0",
     "solidity-rlp": "^2.0.8"
   },

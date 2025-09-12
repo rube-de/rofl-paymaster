@@ -1,6 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
+import "./tasks";
 
 const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : {
   mnemonic: "test test test test test test test test test test test junk",

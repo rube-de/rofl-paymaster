@@ -1,12 +1,74 @@
-# Sample Hardhat Project
+# ROFL Paymaster Hardhat Workspace
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+## Quick Commands
 
-Try running some of the following tasks:
+- Compile: `bun hardhat compile`
+- Help: `bun hardhat help`
 
-```shell
-bun hardhat help
-bun hardhat compile
-bun hardhat test
-REPORT_GAS=true bun hardhat test
-```
+See `.env.example` for required variables. Copy to `.env` and fill values before deployment.
+
+## Required Dev Dependencies
+
+- `@openzeppelin/hardhat-upgrades` for UUPS deploy/upgrade tasks
+
+## Environment Variables
+
+- CrossChainPaymaster: `OWNER`, `OPERATOR`, `PRICE_ORACLE`, `SHOYU_BASHI`
+- PaymasterVault: `VAULT_OWNER` (or `OWNER`), `BLOCK_HEADER_REQUESTER`
+- Optional limits: `DAILY_LIMIT_ROSE`, `PER_TX_LIMIT_ROSE`, `LIMITS_ENABLED`
+- Upgrade helpers: `PROXY_ADDRESS`, `VAULT_PROXY_ADDRESS`, `RUN_VALIDATION`
+
+## CrossChainPaymaster
+
+### Deploy
+
+- Task: `bun hardhat deploy:cross-chain-paymaster --network sapphireTestnet`
+- Env (or flags):
+  - `OWNER`, `OPERATOR`, `PRICE_ORACLE`, `SHOYU_BASHI`
+  - `DAILY_LIMIT_ROSE` (default 10000), `PER_TX_LIMIT_ROSE` (default 100), `LIMITS_ENABLED` (default true)
+- Outputs proxy, implementation, owner, operator
+
+### Configure
+
+- Task:
+  `bun hardhat configure:cross-chain-paymaster \
+    --proxy <paymaster> --chainid <id> \
+    [--vault <vault>] [--authorize true] \
+    [--daily 25000] [--pertx 250] [--limitsenabled true] \
+    --network sapphireTestnet`
+- Options:
+  - Chain config: `--enabled`, `--confirmations`, `--blocktime`, `--maxrose`
+  - Vault auth: `--vault`, `--authorize`
+  - Limits: `--daily`, `--pertx`, `--limitsenabled`
+
+### Upgrade
+
+- Task: `bun hardhat upgrade:cross-chain-paymaster --proxy <paymaster> [--skipcheck true] --network sapphireTestnet`
+- Or env: `PROXY_ADDRESS`, `RUN_VALIDATION`
+
+## PaymasterVault (Remote Chain)
+
+### Deploy
+
+- Task: `bun hardhat deploy:paymaster-vault --network baseSepolia`
+- Env (or flags): `VAULT_OWNER` (or `OWNER`), `BLOCK_HEADER_REQUESTER`
+
+### Configure Token
+
+- Task:
+  `bun hardhat configure:paymaster-vault \
+    --proxy <vault> --token <token> --decimals 6 \
+    --min 10 --max 10000 --dailylimit 50000 --breakerenabled true \
+    --network baseSepolia`
+- Sets asset bounds and per-token circuit breaker
+
+### Upgrade
+
+- Task: `bun hardhat upgrade:paymaster-vault --proxy <vault> [--skipcheck true] --network baseSepolia`
+- Or env: `VAULT_PROXY_ADDRESS`, `RUN_VALIDATION`
+
+## Scripts
+
+- CrossChainPaymaster: `scripts/deploy_cross_chain_paymaster.ts`
+- PaymasterVault: `scripts/deploy_paymaster_vault.ts`
+- Run with the same env variables as the tasks

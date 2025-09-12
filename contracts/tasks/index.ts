@@ -1,12 +1,22 @@
-// Deployment tasks
-import "./ping/deploy/deploy-block-header-requester";
-import "./ping/deploy/deploy-ping-sender";
-import "./ping/deploy/deploy-ping-receiver";
-import "./ping/deploy/deploy-ping-cross-chain";
+// Ping deployment tasks (optional deps) - load defensively
+try { require("./ping/deploy/deploy-block-header-requester"); } catch {}
+try { require("./ping/deploy/deploy-ping-sender"); } catch {}
+try { require("./ping/deploy/deploy-ping-receiver"); } catch {}
+try { require("./ping/deploy/deploy-ping-cross-chain"); } catch {}
 
-// Ping operation tasks
-import "./ping/ping/send-ping";
-import "./ping/ping/check-ping";
-import "./ping/ping/generate-proof";
-import "./ping/ping/relay-message";
-import "./ping/ping/post-blockhash";
+// Ping operation tasks (optional deps)
+try { require("./ping/ping/send-ping"); } catch {}
+try { require("./ping/ping/check-ping"); } catch {}
+try { require("./ping/ping/generate-proof"); } catch {}
+try { require("./ping/ping/relay-message"); } catch {}
+
+// Paymaster tasks
+import "./paymaster/deploy/deploy-paymaster-vault";
+import "./paymaster/deploy/upgrade-paymaster-vault";
+import "./paymaster/deploy/deploy-cross-chain-paymaster";
+import "./paymaster/deploy/upgrade-cross-chain-paymaster";
+import "./paymaster/post/configure-cross-chain-paymaster";
+import "./paymaster/post/configure-paymaster-vault";
+
+// General utility tasks
+import "./post-blockhash";
