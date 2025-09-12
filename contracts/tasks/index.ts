@@ -17,6 +17,10 @@ import "./paymaster/deploy/deploy-cross-chain-paymaster";
 import "./paymaster/deploy/upgrade-cross-chain-paymaster";
 import "./paymaster/post/configure-cross-chain-paymaster";
 import "./paymaster/post/configure-paymaster-vault";
+// Paymaster payment flow tasks
+import "./paymaster/pay/deposit-token";
+import "./paymaster/pay/generate-proof";
+import "./paymaster/pay/relay-payment";
 
 // General utility tasks
 import "./post-blockhash";
