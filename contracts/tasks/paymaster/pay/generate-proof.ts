@@ -153,7 +153,7 @@ task("pay:generate-proof", "Generate Merkle proof for PaymentInitiated event")
 
       console.log("\n💡 Next step:");
       console.log(
-        `bunx hardhat pay:relay --paymaster <CROSS_CHAIN_PAYMASTER> --proof ${proofPath} --network <sapphireNetwork>`
+        `bunx hardhat pay:relay --network <sapphireNetwork>`
       );
 
       return {

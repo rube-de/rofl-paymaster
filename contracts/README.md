@@ -16,7 +16,7 @@ See `.env.example` for required variables. Copy to `.env` and fill values before
 - CrossChainPaymaster: `OWNER`, `OPERATOR`, `PRICE_ORACLE`, `SHOYU_BASHI`
 - PaymasterVault: `VAULT_OWNER` (or `OWNER`), `BLOCK_HEADER_REQUESTER`
 - Optional limits: `DAILY_LIMIT_ROSE`, `PER_TX_LIMIT_ROSE`, `LIMITS_ENABLED`
-- Upgrade helpers: `PROXY_ADDRESS`, `VAULT_PROXY_ADDRESS`, `RUN_VALIDATION`
+- Upgrade helpers: `PAYMASTER_PROXY_ADDRESS`, `VAULT_PROXY_ADDRESS`, `RUN_VALIDATION`
 
 ## CrossChainPaymaster
 
@@ -44,7 +44,7 @@ See `.env.example` for required variables. Copy to `.env` and fill values before
 ### Upgrade
 
 - Task: `bun hardhat upgrade:cross-chain-paymaster --proxy <paymaster> [--skipcheck true] --network sapphireTestnet`
-- Or env: `PROXY_ADDRESS`, `RUN_VALIDATION`
+- Or env: `PAYMASTER_PROXY_ADDRESS`, `RUN_VALIDATION`
 
 ## PaymasterVault (Remote Chain)
 

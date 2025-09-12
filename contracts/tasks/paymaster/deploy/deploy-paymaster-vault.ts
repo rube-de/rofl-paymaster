@@ -3,12 +3,12 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 task("deploy:paymaster-vault", "Deploy PaymasterVault (UUPS)")
   .addOptionalParam("owner", "Owner address (falls back to env VAULT_OWNER/OWNER)")
-  .addParam("bhr", "BlockHeaderRequester address (or set env BLOCK_HEADER_REQUESTER)", undefined, undefined, true)
+  .addOptionalParam("bhr", "BlockHeaderRequester address (or set env BLOCK_HEADER_REQUESTER)")
   .setAction(async (args: { owner?: string; bhr?: string }, hre: HardhatRuntimeEnvironment) => {
     const { ethers, upgrades } = hre;
 
-    const owner = args.owner || process.env.VAULT_OWNER || process.env.OWNER;
-    const blockHeaderRequester = args.bhr || process.env.BLOCK_HEADER_REQUESTER;
+    const owner = args.owner ?? process.env.VAULT_OWNER ?? process.env.OWNER;
+    const blockHeaderRequester = args.bhr ?? process.env.BLOCK_HEADER_REQUESTER;
 
     if (!owner) throw new Error("Missing owner: pass --owner or set VAULT_OWNER/OWNER env");
     if (!blockHeaderRequester) throw new Error("Missing BlockHeaderRequester: pass --bhr or set BLOCK_HEADER_REQUESTER env");
@@ -31,4 +31,3 @@ task("deploy:paymaster-vault", "Deploy PaymasterVault (UUPS)")
     console.log("Proxy:", proxyAddress);
     console.log("Implementation:", implAddress);
   });
-

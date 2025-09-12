@@ -9,8 +9,8 @@ function toBool(v?: string | boolean): boolean {
 }
 
 task("configure:paymaster-vault", "Post-deploy configuration for PaymasterVault")
-  .addParam("proxy", "Deployed PaymasterVault proxy address")
-  .addOptionalParam("token", "ERC20 token address to configure")
+  .addOptionalParam("proxy", "Deployed PaymasterVault proxy address (or set env VAULT_PROXY_ADDRESS)")
+  .addOptionalParam("token", "ERC20 token address to configure (or set env PAYMASTER_VAULT_TOKEN)")
   .addOptionalParam("enabled", "Enable/disable deposits for token (default: true)")
   .addOptionalParam("decimals", "Token decimals (0-18; required if setting min/max)")
   .addOptionalParam("min", "Minimum deposit amount (whole tokens, parsed with 'decimals')")
@@ -20,14 +20,23 @@ task("configure:paymaster-vault", "Post-deploy configuration for PaymasterVault"
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     const { ethers } = hre;
 
-    const proxy: string = args.proxy;
-    const token: string | undefined = args.token;
-    const enabled: boolean = args.enabled !== undefined ? toBool(args.enabled) : true;
-    const decimals: number | undefined = args.decimals ? parseInt(args.decimals) : undefined;
-    const minStr: string | undefined = args.min;
-    const maxStr: string | undefined = args.max;
-    const dailyStr: string | undefined = args.dailylimit;
-    const breakerEnabled: boolean = args.breakerenabled !== undefined ? toBool(args.breakerenabled) : true;
+    // Resolve inputs with env fallbacks
+    const proxy: string = args.proxy ?? process.env.VAULT_PROXY_ADDRESS;
+    if (!proxy) throw new Error("Missing proxy: pass --proxy or set VAULT_PROXY_ADDRESS env");
+
+    const token: string | undefined = args.token ?? process.env.PAYMASTER_VAULT_TOKEN ?? "0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0";
+    const enabled: boolean = args.enabled !== undefined
+      ? toBool(args.enabled)
+      : (process.env.PAYMASTER_VAULT_TOKEN_ENABLED !== undefined ? toBool(process.env.PAYMASTER_VAULT_TOKEN_ENABLED) : true);
+    const decimals: number | undefined = args.decimals
+      ? parseInt(args.decimals)
+      : (process.env.PAYMASTER_VAULT_TOKEN_DECIMALS ? parseInt(process.env.PAYMASTER_VAULT_TOKEN_DECIMALS) : undefined);
+    const minStr: string | undefined = args.min ?? process.env.PAYMASTER_VAULT_TOKEN_MIN;
+    const maxStr: string | undefined = args.max ?? process.env.PAYMASTER_VAULT_TOKEN_MAX;
+    const dailyStr: string | undefined = args.dailylimit ?? process.env.PAYMASTER_VAULT_TOKEN_DAILY_LIMIT;
+    const breakerEnabled: boolean = args.breakerenabled !== undefined
+      ? toBool(args.breakerenabled)
+      : (process.env.PAYMASTER_VAULT_BREAKER_ENABLED !== undefined ? toBool(process.env.PAYMASTER_VAULT_BREAKER_ENABLED) : true);
 
     const vault = await ethers.getContractAt("PaymasterVault", proxy);
 
@@ -73,4 +82,3 @@ task("configure:paymaster-vault", "Post-deploy configuration for PaymasterVault"
 
     console.log("✅ PaymasterVault configuration completed");
   });
-

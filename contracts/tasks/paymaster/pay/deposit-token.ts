@@ -9,23 +9,25 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 //   --token 0xErc20... \
 //   --amount 100 \
 //   --recipient 0xRecipientOnSapphire... \
-//   [--decimals 6] [--from 0x...] [--approve]
+//   [--decimals 6] [--from 0x...] [--noapprove]
 
 task("pay:deposit", "Deposit ERC20 into PaymasterVault and emit PaymentInitiated")
-  .addParam("vault", "PaymasterVault proxy address on the source chain")
-  .addParam("token", "ERC20 token address to deposit")
-  .addParam("amount", "Amount in whole tokens (uses --decimals to parse)")
-  .addParam("recipient", "Recipient address on Sapphire to receive ROSE")
-  .addOptionalParam("decimals", "Token decimals (auto-detected if omitted)")
+  .addOptionalParam("amount", "Amount in whole tokens (uses --decimals / env to parse)", "1")
+  .addOptionalParam("recipient", "Recipient address on Sapphire (defaults to sender)")
+  .addOptionalParam("vault", "PaymasterVault proxy address on the source chain (or set VAULT_PROXY_ADDRESS)")
+  .addOptionalParam("token", "ERC20 token address to deposit (or set PAYMASTER_VAULT_TOKEN)")
+  .addOptionalParam("decimals", "Token decimals (auto-detected, or set PAYMASTER_VAULT_TOKEN_DECIMALS)")
   .addOptionalParam("from", "Sender address (defaults to first signer)")
-  .addFlag("approve", "Approve vault to spend tokens if allowance is insufficient")
+  .addFlag("noapprove", "Do not auto-approve if allowance is insufficient (approval is default)")
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     const { ethers } = hre;
 
-    const vaultAddr: string = args.vault;
-    const tokenAddr: string = args.token;
+    const vaultAddr: string = args.vault ?? process.env.VAULT_PROXY_ADDRESS;
+    if (!vaultAddr) throw new Error("Missing --vault and VAULT_PROXY_ADDRESS env");
+
+    const tokenAddr: string = args.token ?? process.env.PAYMASTER_VAULT_TOKEN;
+    if (!tokenAddr) throw new Error("Missing --token and PAYMASTER_VAULT_TOKEN env");
     const amountStr: string = args.amount;
-    const recipient: string = args.recipient;
 
     // Get signer
     const signers = await ethers.getSigners();
@@ -41,10 +43,12 @@ task("pay:deposit", "Deposit ERC20 into PaymasterVault and emit PaymentInitiated
     console.log("From:", signer.address);
     console.log("Vault:", vaultAddr);
     console.log("Token:", tokenAddr);
+    // Resolve recipient default (same as --from signer if omitted)
+    const recipient: string = args.recipient ?? signer.address;
     console.log("Recipient (Sapphire):", recipient);
 
     // Resolve decimals (prefer explicit, else attempt on-chain detection, fallback 18)
-    let decimals: number | undefined = args.decimals ? parseInt(args.decimals) : undefined;
+    let decimals: number | undefined = args.decimals ? parseInt(args.decimals) : (process.env.PAYMASTER_VAULT_TOKEN_DECIMALS ? parseInt(process.env.PAYMASTER_VAULT_TOKEN_DECIMALS) : undefined);
     if (Number.isNaN(decimals as number)) decimals = undefined;
     if (decimals === undefined) {
       try {
@@ -80,8 +84,8 @@ task("pay:deposit", "Deposit ERC20 into PaymasterVault and emit PaymentInitiated
     const allowance: bigint = await token.allowance(signer.address, vaultAddr);
     console.log("Allowance:", allowance.toString());
     if (allowance < amount) {
-      if (!args.approve) {
-        throw new Error("Allowance insufficient. Re-run with --approve to approve the vault");
+      if (args.noapprove) {
+        throw new Error("Allowance insufficient. Re-run without --noapprove to auto-approve the vault");
       }
       console.log("\n✅ Approving vault to spend tokens...");
       const atx = await token.approve(vaultAddr, amount);
@@ -157,4 +161,3 @@ task("pay:deposit", "Deposit ERC20 into PaymasterVault and emit PaymentInitiated
       paymentId,
     };
   });
-

@@ -7,25 +7,28 @@ import * as fs from "fs";
 type ProofTuple = [number, number, string, number, string[], string[], string, number];
 
 task("pay:relay", "Relay PaymentInitiated proof to CrossChainPaymaster on Sapphire")
-  .addParam("proof", "Proof data (JSON file path or inline JSON string)")
-  .addParam("paymaster", "CrossChainPaymaster proxy address on Sapphire")
+  .addOptionalParam("proof", "Proof data (JSON file path or inline JSON string)", "proof.json")
+  .addOptionalParam("paymaster", "CrossChainPaymaster proxy address on Sapphire (or set PAYMASTER_PROXY_ADDRESS)")
   .setAction(async (args, hre: HardhatRuntimeEnvironment) => {
     const { ethers } = hre;
 
     console.log("🌉 Relaying payment to CrossChainPaymaster");
-    console.log("Paymaster:", args.paymaster);
+    const paymasterAddress = args.paymaster ?? process.env.PAYMASTER_PROXY_ADDRESS
+    if (!paymasterAddress) throw new Error("Missing paymaster: pass --paymaster or set PAYMASTER_PROXY_ADDRESS env");
+    console.log("Paymaster:", paymasterAddress);
     console.log("Network:", hre.network.name);
 
     try {
       // Load proof
       let proof: ProofTuple;
-      if (String(args.proof).trim().startsWith("{")) {
+      const proofArg = args.proof ?? "proof.json";
+      if (String(proofArg).trim().startsWith("{")) {
         console.log("📄 Parsing inline proof JSON...");
-        proof = JSON.parse(args.proof);
+        proof = JSON.parse(proofArg);
       } else {
-        console.log("📁 Reading proof file:", args.proof);
-        if (!fs.existsSync(args.proof)) throw new Error(`Proof file not found: ${args.proof}`);
-        const raw = fs.readFileSync(args.proof, "utf8");
+        console.log("📁 Reading proof file:", proofArg);
+        if (!fs.existsSync(proofArg)) throw new Error(`Proof file not found: ${proofArg}`);
+        const raw = fs.readFileSync(proofArg, "utf8");
         proof = JSON.parse(raw);
       }
 
@@ -54,7 +57,7 @@ task("pay:relay", "Relay PaymentInitiated proof to CrossChainPaymaster on Sapphi
       console.log("  Receipt Proof Nodes:", receiptProofArray.length);
 
       // Connect to CrossChainPaymaster
-      const paymaster = await ethers.getContractAt("CrossChainPaymaster", args.paymaster);
+      const paymaster = await ethers.getContractAt("CrossChainPaymaster", paymasterAddress);
 
       // Compose ReceiptProof struct
       const receiptProof = {

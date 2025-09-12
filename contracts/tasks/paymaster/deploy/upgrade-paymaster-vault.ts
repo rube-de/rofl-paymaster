@@ -2,13 +2,13 @@ import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 task("upgrade:paymaster-vault", "Upgrade an existing PaymasterVault UUPS proxy")
-  .addParam("proxy", "Proxy address (or set VAULT_PROXY_ADDRESS/PROXY_ADDRESS)", undefined, undefined, true)
+  .addOptionalParam("proxy", "Proxy address (or set VAULT_PROXY_ADDRESS)")
   .addOptionalParam("skipcheck", "Skip storage checks (default false)")
   .setAction(async (args: { proxy?: string; skipcheck?: string }, hre: HardhatRuntimeEnvironment) => {
     const { ethers, upgrades } = hre;
 
-    const proxy = args.proxy || process.env.VAULT_PROXY_ADDRESS || process.env.PROXY_ADDRESS;
-    if (!proxy) throw new Error("Missing proxy: pass --proxy or set VAULT_PROXY_ADDRESS/PROXY_ADDRESS env");
+    const proxy = args.proxy ?? process.env.VAULT_PROXY_ADDRESS ?? process.env.PROXY_ADDRESS;
+    if (!proxy) throw new Error("Missing proxy: pass --proxy or set VAULT_PROXY_ADDRESS env");
 
     const unsafeSkipStorageCheck = args.skipcheck ? args.skipcheck.toLowerCase() === "true" : (process.env.RUN_VALIDATION ?? "true").toLowerCase() !== "true";
 
@@ -27,4 +27,3 @@ task("upgrade:paymaster-vault", "Upgrade an existing PaymasterVault UUPS proxy")
     console.log("Upgraded PaymasterVault proxy");
     console.log("New implementation:", newImpl);
   });
-

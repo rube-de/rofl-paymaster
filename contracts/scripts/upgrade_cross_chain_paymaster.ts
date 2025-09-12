@@ -5,15 +5,15 @@ import "@openzeppelin/hardhat-upgrades";
 Upgrades an existing CrossChainPaymaster UUPS proxy to a new implementation.
 
 Required env vars:
-- PROXY_ADDRESS
+- PAYMASTER_PROXY_ADDRESS (or legacy PROXY_ADDRESS)
 
 Optional validation:
 - RUN_VALIDATION ("true" | "false", default: "true")
 */
 
 async function main() {
-  const proxyAddress = process.env.PROXY_ADDRESS as string;
-  if (!proxyAddress) throw new Error("Missing env: PROXY_ADDRESS");
+  const proxyAddress = (process.env.PAYMASTER_PROXY_ADDRESS || process.env.PROXY_ADDRESS) as string;
+  if (!proxyAddress) throw new Error("Missing env: PAYMASTER_PROXY_ADDRESS");
 
   const CrossChainPaymaster = await ethers.getContractFactory("CrossChainPaymaster");
   const runValidation = (process.env.RUN_VALIDATION ?? "true").toLowerCase() === "true";
@@ -33,4 +33,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

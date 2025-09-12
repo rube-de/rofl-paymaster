@@ -4,6 +4,8 @@
     "postinstall": "patch-package"
   },
   "devDependencies": {
+    "@ethereumjs/block": "^10.0.0",
+    "@ethereumjs/trie": "^6.2.1",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@oasisprotocol/sapphire-contracts": "^0.2.14",
     "@openzeppelin/contracts": "^5.4.0",
