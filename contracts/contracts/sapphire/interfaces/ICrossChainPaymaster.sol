@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import { ReceiptProof } from "../../hashi/prover/HashiProverStructs.sol";
+
 /**
  * @title ICrossChainPaymaster
  * @notice Interface for the Sapphire CrossChainPaymaster using Hashi receipt proofs
@@ -21,25 +23,11 @@ interface ICrossChainPaymaster {
     event PriceOracleUpdated(address indexed oldOracle, address indexed newOracle);
 
     /**
-     * @notice Process a PaymentInitiated event proof and distribute ROSE
-     * @dev Expects `proof` to ABI-decode to a ReceiptProof used by HashiProver
-     * @param proof Bytes-encoded ReceiptProof
+     * @notice Process a PaymentInitiated event proof and distribute ROSE (permissionless)
+     * @dev Security enforced by Hashi proof verification, chain/vault auth, limits, and replay protection
+     * @param proof ReceiptProof consumed by HashiProver
      */
-    function processPayment(bytes calldata proof) external;
-
-    /**
-     * @notice Compatibility wrapper for flows providing deposit metadata + bytes proof
-     * @dev All parameters except `proof` are ignored; kept for backwards compatibility
-     */
-    function verifyAndDistribute(
-        uint256 depositId,
-        address depositor,
-        address token,
-        uint256 amount,
-        address recipient,
-        uint256 blockNumber,
-        bytes calldata proof
-    ) external;
+    function processPayment(ReceiptProof calldata proof) external;
 
     /**
      * @notice Checks if a paymentId has already been processed

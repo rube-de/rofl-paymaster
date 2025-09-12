@@ -68,10 +68,10 @@ task("pay:relay", "Relay PaymentInitiated proof to CrossChainPaymaster on Sapphi
         logIndex,
       };
 
-      console.log("\n📤 Submitting to CrossChainPaymaster.processPaymentReceipt()...");
-      console.log("  Caller must be roflOperator or owner");
+      console.log("\n📤 Submitting to CrossChainPaymaster.processPayment()...");
+      console.log("  Permissionless: anyone can submit a valid proof");
 
-      const tx = await paymaster.processPaymentReceipt(receiptProof);
+      const tx = await paymaster.processPayment(receiptProof);
       console.log("  tx:", tx.hash);
       console.log("⏳ Waiting for confirmation...");
       const rc = await tx.wait();
@@ -103,9 +103,7 @@ task("pay:relay", "Relay PaymentInitiated proof to CrossChainPaymaster on Sapphi
       return { txHash: tx.hash, blockNumber: rc.blockNumber };
     } catch (err: any) {
       console.error("❌ Relay failed:", err?.message || err);
-      if (err?.message?.includes("NotOperatorOrOwner")) {
-        console.log("\n💡 The caller must be roflOperator or owner on CrossChainPaymaster.");
-      } else if (err?.message?.includes("ChainDisabled")) {
+      if (err?.message?.includes("ChainDisabled")) {
         console.log("\n💡 Enable the source chain in CrossChainPaymaster via configure:cross-chain-paymaster.");
       } else if (err?.message?.includes("VaultNotAuthorized")) {
         console.log("\n💡 Authorize the source PaymasterVault for this chain in CrossChainPaymaster.");
@@ -119,4 +117,3 @@ task("pay:relay", "Relay PaymentInitiated proof to CrossChainPaymaster on Sapphi
       throw err;
     }
   });
-

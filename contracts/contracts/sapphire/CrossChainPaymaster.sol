@@ -176,23 +176,10 @@ contract CrossChainPaymaster is
     /**
      * @notice Verifies a PaymentInitiated event via Hashi and distributes ROSE to the recipient.
      * @param proof Hashi receipt proof (see ReceiptProof struct)
-     * @dev Restricted to ROFL operator or owner.
+     * @dev Permissionless; security enforced by proof verification, chain/vault config, limits, and replay protection.
      */
-    function processPaymentReceipt(ReceiptProof calldata proof) external onlyOperatorOrOwner nonReentrant whenNotPaused {
+    function processPayment(ReceiptProof calldata proof) external nonReentrant whenNotPaused {
         _processPayment(proof);
-    }
-
-    // Interface-friendly entry that accepts bytes-encoded ReceiptProof
-    function processPayment(bytes calldata proof) external onlyOperatorOrOwner whenNotPaused {
-        ReceiptProof memory rp = abi.decode(proof, (ReceiptProof));
-        bytes memory cd = abi.encodeWithSelector(this.processPaymentReceipt.selector, rp);
-        (bool ok, bytes memory reason) = address(this).call(cd);
-        if (!ok) {
-            // bubble up reason if present
-            assembly {
-                revert(add(reason, 32), mload(reason))
-            }
-        }
     }
 
     function _processPayment(ReceiptProof calldata proof) internal {
@@ -247,23 +234,6 @@ contract CrossChainPaymaster is
 
         // Silence state variable warnings
         (payer, eventPaymentId);
-    }
-
-    /**
-     * @notice Compatibility wrapper for generic interfaces expecting bytes-encoded proof.
-     * @dev Decodes `proof` as `ReceiptProof` and delegates to processPayment.
-     */
-    function verifyAndDistribute(
-        uint256 /*depositId*/,
-        address /*depositor*/,
-        address /*token*/,
-        uint256 /*amount*/,
-        address /*recipient*/,
-        uint256 /*blockNumber*/,
-        bytes calldata proof
-    ) external onlyOperatorOrOwner whenNotPaused {
-        // Delegate to bytes entrypoint for compatibility with interface
-        this.processPayment(proof);
     }
 
     // ---------------------------------------------------------------------
