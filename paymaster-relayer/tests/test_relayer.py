@@ -9,8 +9,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from rofl_relayer.relayer import ROFLRelayer
-from rofl_relayer.utils.polling_event_listener import PollingEventListener
+from paymaster_relayer.relayer import ROFLRelayer
+from paymaster_relayer.utils.polling_event_listener import PollingEventListener
 
 
 async def test_polling_listener_structure():

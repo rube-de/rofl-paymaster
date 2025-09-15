@@ -59,7 +59,7 @@ PAYMASTER_VAULT_ADDRESS=0x... \
 TARGET_RPC_URL=https://testnet.sapphire.oasis.io \
 PAYMASTER_PROXY_ADDRESS=0x... \
 PRIVATE_KEY=0x... \
-uv run python -m rofl_relayer --local
+uv run python -m paymaster_relayer --local
 ```
 
 ## Testing
@@ -80,7 +80,7 @@ The test suite validates:
 ## Architecture
 
 ```
-rofl_relayer/
+paymaster_relayer/
   config.py                  # Configuration management
   relayer.py                 # Main relayer service
   utils/                     # Utility modules

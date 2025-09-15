@@ -7,13 +7,11 @@ import sys
 
 from .relayer import ROFLRelayer
 
-# Set up root logger
 logger = logging.getLogger(__name__)
 
 
 async def main():
     """Main entry point for the Paymaster Relayer."""
-    # Parse command line arguments
     parser = argparse.ArgumentParser(description="Paymaster Relayer")
     parser.add_argument(
         "--local",
@@ -28,7 +26,6 @@ async def main():
     relayer = None
 
     try:
-        # Create relayer using factory method
         relayer = ROFLRelayer.from_env(local_mode=args.local)
         await relayer.run()
     except ValueError as e:

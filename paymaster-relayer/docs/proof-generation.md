@@ -8,7 +8,7 @@ The ROFL Relayer now includes cryptographic proof generation capability that ena
 
 ### ProofManager Class
 
-The `ProofManager` class (`src/rofl_relayer/proof_manager.py`) encapsulates all proof generation logic:
+The `ProofManager` class (`src/paymaster_relayer/proof_manager.py`) encapsulates all proof generation logic:
 
 - **Single Responsibility**: All proof logic in one cohesive class
 - **Mode Support**: Works in both local mode (with private keys) and ROFL mode (using ROFL utilities)

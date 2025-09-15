@@ -8,7 +8,7 @@ This document outlines planned enhancements for the ROFL Relayer that were defer
 Create a comprehensive exception hierarchy for better error handling:
 
 ```python
-# src/rofl_relayer/exceptions.py
+# src/paymaster_relayer/exceptions.py
 class ROFLRelayerError(Exception):
     """Base exception for all ROFL Relayer errors."""
     pass
@@ -36,7 +36,7 @@ class ConfigurationError(ROFLRelayerError):
 Add comprehensive validation for blockchain data:
 
 ```python
-# src/rofl_relayer/utils/validators.py
+# src/paymaster_relayer/utils/validators.py
 from web3 import Web3
 
 def validate_address(address: str) -> str:
@@ -64,7 +64,7 @@ def validate_block_number(block_number: int, min_block: int = 0) -> int:
 Implement Web3 connection pooling for better resource management:
 
 ```python
-# src/rofl_relayer/utils/web3_pool.py
+# src/paymaster_relayer/utils/web3_pool.py
 import asyncio
 from contextlib import asynccontextmanager
 from web3 import Web3
@@ -96,7 +96,7 @@ class Web3ConnectionPool:
 Prevent RPC endpoint overload with token bucket rate limiting:
 
 ```python
-# src/rofl_relayer/utils/rate_limiter.py
+# src/paymaster_relayer/utils/rate_limiter.py
 import asyncio
 import time
 from collections import deque
@@ -134,7 +134,7 @@ class RateLimiter:
 Add resilient retry mechanisms for network operations:
 
 ```python
-# src/rofl_relayer/utils/retry.py
+# src/paymaster_relayer/utils/retry.py
 import asyncio
 import random
 from typing import TypeVar, Callable, Awaitable
@@ -178,7 +178,7 @@ async def retry_with_backoff(
 Prevent cascading failures with circuit breaker:
 
 ```python
-# src/rofl_relayer/utils/circuit_breaker.py
+# src/paymaster_relayer/utils/circuit_breaker.py
 import time
 from enum import Enum
 from typing import Callable, Any
@@ -274,7 +274,7 @@ Create extensive unit and integration tests:
 # tests/test_event_processor.py
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from rofl_relayer.event_processor import EventProcessor, PingEvent
+from paymaster_relayer.event_processor import EventProcessor, PingEvent
 
 @pytest.mark.asyncio
 async def test_process_ping_event_with_valid_data():
@@ -339,7 +339,7 @@ async def test_full_relay_flow():
 Track key performance indicators:
 
 ```python
-# src/rofl_relayer/metrics.py
+# src/paymaster_relayer/metrics.py
 import time
 from dataclasses import dataclass, field
 from typing import Dict
@@ -388,7 +388,7 @@ class PerformanceMetrics:
 
 ### Health Checks
 ```python
-# src/rofl_relayer/health.py
+# src/paymaster_relayer/health.py
 from enum import Enum
 from typing import Dict, Any
 
@@ -426,7 +426,7 @@ class HealthChecker:
 Use Pydantic for robust configuration validation:
 
 ```python
-# src/rofl_relayer/config_v2.py
+# src/paymaster_relayer/config_v2.py
 from pydantic import BaseModel, Field, validator
 from typing import Optional
 

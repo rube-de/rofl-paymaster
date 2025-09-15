@@ -1,7 +1,7 @@
 [project]
-name = "rofl-relayer"
+name = "paymaster_relayer"
 version = "0.1.0"
-description = "ROFL Relayer for blockchain bridge operations"
+description = "Paymaster Relayer for blockchain bridge operations"
 requires-python = ">=3.12"
 dependencies = [
     "oasis-sapphire-py>=0.4.0",
@@ -97,4 +97,4 @@ line-ending = "auto"
 asyncio_mode = "auto"
 
 [tool.ruff.lint.isort]
-known-first-party = ["rofl_relayer"]
+known-first-party = ["paymaster_relayer"]

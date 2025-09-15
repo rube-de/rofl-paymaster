@@ -20,8 +20,8 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen
 
 # Copy source code
-COPY rofl_relayer/ ./rofl_relayer/
+COPY paymaster_relayer/ ./paymaster_relayer/
 COPY abis/ ./abis/
 
 # Run the relayer using module execution
-ENTRYPOINT ["uv", "run", "python", "-m", "rofl_relayer"]
+ENTRYPOINT ["uv", "run", "python", "-m", "paymaster_relayer"]

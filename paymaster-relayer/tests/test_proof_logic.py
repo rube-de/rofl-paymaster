@@ -15,7 +15,7 @@ from web3 import Web3
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from rofl_relayer.utils.blockchain_encoder import BlockchainEncoder
+from paymaster_relayer.utils.blockchain_encoder import BlockchainEncoder
 
 
 def test_rlp_encoding():

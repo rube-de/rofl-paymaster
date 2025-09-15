@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from rofl_relayer.event_processor import EventProcessor
+from paymaster_relayer.event_processor import EventProcessor
 
 
 class TestEventProcessor:

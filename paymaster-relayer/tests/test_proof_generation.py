@@ -15,9 +15,9 @@ from web3 import Web3
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from rofl_relayer.models import PaymentEvent
-from rofl_relayer.proof_manager import ProofManager
-from rofl_relayer.utils.contract_utility import ContractUtility
+from paymaster_relayer.models import PaymentEvent
+from paymaster_relayer.proof_manager import ProofManager
+from paymaster_relayer.utils.contract_utility import ContractUtility
 
 
 async def test_proof_matches_typescript():
