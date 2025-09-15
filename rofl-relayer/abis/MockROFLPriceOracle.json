@@ -1,0 +1,393 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MockROFLPriceOracle",
+  "sourceName": "contracts/sapphire/MockROFLPriceOracle.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "stalenessThreshold",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "minConfidence",
+          "type": "uint256"
+        }
+      ],
+      "name": "OracleConfigUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "paused",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "OraclePauseStatusChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "confidence",
+          "type": "uint256"
+        }
+      ],
+      "name": "PriceUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "initialPrice",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "decimals",
+          "type": "uint8"
+        }
+      ],
+      "name": "TokenFeedAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "TokenFeedRemoved",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "initialPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "decimals",
+          "type": "uint8"
+        }
+      ],
+      "name": "addTokenFeed",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "roseAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "convertFromRose",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "convertToRose",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "roseAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "getPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "getTokenDecimals",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "decimals",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "isPaused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "paused",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isPriceStale",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "stale",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isTokenSupported",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "supported",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pauseOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "removeTokenFeed",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "stalenessThreshold",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "threshold",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unpauseOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "stalenessThreshold_",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minConfidence_",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateOracleConfig",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "confidence",
+          "type": "uint256"
+        }
+      ],
+      "name": "updatePrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "tokens",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "prices",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "confidences",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "updatePrices",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60808060405234601557610766908161001b8239f35b600080fdfe608080604052600436101561001357600080fd5b60003560e01c9081630fab68651461053d5750806317fdb62f14610518578063253ea980146104c85780632e528ae7146104a157806341976e091461047057806375151b631461044b578063785c7cf61461041d578063a84f6ebb146103ff578063a923b2a6146103b0578063af6d532014610381578063b187bd261461035e578063b8215b921461020a578063e185ecc31461018e578063e57d6fb7146101285763eec5d84a146100c457600080fd5b34610123576020366003190112610123576001600160a01b036100e5610589565b16806000526000602052604060002060ff1981541690557f4cf5bb97d38b7b21c1ec2b85f40fdaed22b5923d058f40183464dc5a5eac1c7e600080a2005b600080fd5b3461012357606036600319011261012357610141610589565b6040805160243581524260208201526044359181019190915243916001600160a01b0316907f5b3d9ab16648d9c4bcd3cc13b5f8b8e4c261c77879e02ef046cdd03e551e2e8e90606090a3005b34610123576060366003190112610123576101a7610589565b6044359060ff82168092036101235760407f3122c5adeb1ad08578a3ffa8c7e7423970cb824392c783e95c6be41cbfc2da9a9160018060a01b031692836000526000602052816000208160ff1982541617905581519060243582526020820152a2005b346101235760603660031901126101235760043567ffffffffffffffff81116101235761023b90369060040161059f565b9060243567ffffffffffffffff81116101235761025c90369060040161059f565b929060443567ffffffffffffffff81116101235761027e90369060040161059f565b91909285811480610355575b156103215760005b81811061029b57005b6102a68183886106e4565b356001600160a01b0381169190829003610123576001916102c8828a876106e4565b35907f5b3d9ab16648d9c4bcd3cc13b5f8b8e4c261c77879e02ef046cdd03e551e2e8e6103186102f9858a8c6106e4565b6040805195865242602087015290359085015243939081906060820190565b0390a301610292565b60405162461bcd60e51b815260206004820152600c60248201526b0d8cadc40dad2e6dac2e8c6d60a31b6044820152606490fd5b5082861461028a565b3461012357600036600319011261012357602060ff600354166040519015158152f35b346101235760403660031901126101235760206103a861039f610589565b602435906106a5565b604051908152f35b34610123576040366003190112610123577fb41a7d63ac4bcd91b617433dfbcee4eabd378e3ca1baed149a6d0d38a2c6a4c46040600435602435816001558060025582519182526020820152a1005b34610123576000366003190112610123576020600154604051908152f35b3461012357602036600319011261012357602061044061043b610589565b61070a565b60ff60405191168152f35b3461012357602036600319011261012357610464610589565b50602060405160018152f35b3461012357602036600319011261012357610489610589565b5060408051670de0b6b3a76400008152426020820152f35b346101235760403660031901126101235760206103a86104bf610589565b6024359061064b565b3461012357600036600319011261012357600160ff1960035416176003557f69120bfdcb81eadbae5d77bc7b495646885b4c71bd44bec14e1e98e21187f8146040805160018152426020820152a1005b3461012357602036600319011261012357610531610589565b50602060405160008152f35b346101235760003660031901126101235760407f69120bfdcb81eadbae5d77bc7b495646885b4c71bd44bec14e1e98e21187f8149160ff196003541660035560008152426020820152a1005b600435906001600160a01b038216820361012357565b9181601f840112156101235782359167ffffffffffffffff8311610123576020808501948460051b01011161012357565b60ff166012039060ff82116105e157565b634e487b7160e01b600052601160045260246000fd5b60ff6011199116019060ff82116105e157565b604d81116105e157600a0a90565b8115610622570490565b634e487b7160e01b600052601260045260246000fd5b818102929181159184041417156105e157565b6106549061070a565b9060ff82166012811461069f576012116106885761067f60ff610679610685946105f7565b1661060a565b90610638565b90565b61069960ff610679610685946105d0565b90610618565b50905090565b6106ae9061070a565b9060ff82166012811461069f576012116106d35761069960ff610679610685946105f7565b61067f60ff610679610685946105d0565b91908110156106f45760051b0190565b634e487b7160e01b600052603260045260246000fd5b6001600160a01b031660009081526020819052604090205460ff1680610685575060129056fea26469706673582212208ec6cc98278f1cb8a95a173dd19ec7a3403b449833b2236a3d5d73f7b43306c264736f6c634300081c0033",
+  "deployedBytecode": "0x608080604052600436101561001357600080fd5b60003560e01c9081630fab68651461053d5750806317fdb62f14610518578063253ea980146104c85780632e528ae7146104a157806341976e091461047057806375151b631461044b578063785c7cf61461041d578063a84f6ebb146103ff578063a923b2a6146103b0578063af6d532014610381578063b187bd261461035e578063b8215b921461020a578063e185ecc31461018e578063e57d6fb7146101285763eec5d84a146100c457600080fd5b34610123576020366003190112610123576001600160a01b036100e5610589565b16806000526000602052604060002060ff1981541690557f4cf5bb97d38b7b21c1ec2b85f40fdaed22b5923d058f40183464dc5a5eac1c7e600080a2005b600080fd5b3461012357606036600319011261012357610141610589565b6040805160243581524260208201526044359181019190915243916001600160a01b0316907f5b3d9ab16648d9c4bcd3cc13b5f8b8e4c261c77879e02ef046cdd03e551e2e8e90606090a3005b34610123576060366003190112610123576101a7610589565b6044359060ff82168092036101235760407f3122c5adeb1ad08578a3ffa8c7e7423970cb824392c783e95c6be41cbfc2da9a9160018060a01b031692836000526000602052816000208160ff1982541617905581519060243582526020820152a2005b346101235760603660031901126101235760043567ffffffffffffffff81116101235761023b90369060040161059f565b9060243567ffffffffffffffff81116101235761025c90369060040161059f565b929060443567ffffffffffffffff81116101235761027e90369060040161059f565b91909285811480610355575b156103215760005b81811061029b57005b6102a68183886106e4565b356001600160a01b0381169190829003610123576001916102c8828a876106e4565b35907f5b3d9ab16648d9c4bcd3cc13b5f8b8e4c261c77879e02ef046cdd03e551e2e8e6103186102f9858a8c6106e4565b6040805195865242602087015290359085015243939081906060820190565b0390a301610292565b60405162461bcd60e51b815260206004820152600c60248201526b0d8cadc40dad2e6dac2e8c6d60a31b6044820152606490fd5b5082861461028a565b3461012357600036600319011261012357602060ff600354166040519015158152f35b346101235760403660031901126101235760206103a861039f610589565b602435906106a5565b604051908152f35b34610123576040366003190112610123577fb41a7d63ac4bcd91b617433dfbcee4eabd378e3ca1baed149a6d0d38a2c6a4c46040600435602435816001558060025582519182526020820152a1005b34610123576000366003190112610123576020600154604051908152f35b3461012357602036600319011261012357602061044061043b610589565b61070a565b60ff60405191168152f35b3461012357602036600319011261012357610464610589565b50602060405160018152f35b3461012357602036600319011261012357610489610589565b5060408051670de0b6b3a76400008152426020820152f35b346101235760403660031901126101235760206103a86104bf610589565b6024359061064b565b3461012357600036600319011261012357600160ff1960035416176003557f69120bfdcb81eadbae5d77bc7b495646885b4c71bd44bec14e1e98e21187f8146040805160018152426020820152a1005b3461012357602036600319011261012357610531610589565b50602060405160008152f35b346101235760003660031901126101235760407f69120bfdcb81eadbae5d77bc7b495646885b4c71bd44bec14e1e98e21187f8149160ff196003541660035560008152426020820152a1005b600435906001600160a01b038216820361012357565b9181601f840112156101235782359167ffffffffffffffff8311610123576020808501948460051b01011161012357565b60ff166012039060ff82116105e157565b634e487b7160e01b600052601160045260246000fd5b60ff6011199116019060ff82116105e157565b604d81116105e157600a0a90565b8115610622570490565b634e487b7160e01b600052601260045260246000fd5b818102929181159184041417156105e157565b6106549061070a565b9060ff82166012811461069f576012116106885761067f60ff610679610685946105f7565b1661060a565b90610638565b90565b61069960ff610679610685946105d0565b90610618565b50905090565b6106ae9061070a565b9060ff82166012811461069f576012116106d35761069960ff610679610685946105f7565b61067f60ff610679610685946105d0565b91908110156106f45760051b0190565b634e487b7160e01b600052603260045260246000fd5b6001600160a01b031660009081526020819052604090205460ff1680610685575060129056fea26469706673582212208ec6cc98278f1cb8a95a173dd19ec7a3403b449833b2236a3d5d73f7b43306c264736f6c634300081c0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
