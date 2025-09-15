@@ -33,7 +33,6 @@ contract CrossChainPaymaster is
     // Events (keep minimal on Sapphire for privacy)
     // ---------------------------------------------------------------------
     event PaymentProcessed(bytes32 indexed paymentId, uint256 roseAmount);
-    event OperatorUpdated(address indexed oldOperator, address indexed newOperator);
     event PriceOracleUpdated(address indexed oldOracle, address indexed newOracle);
     event ChainConfigUpdated(uint256 indexed chainId, SapphireTypes.ChainConfig config);
     event VaultAuthorizationUpdated(uint256 indexed chainId, address indexed vault, bool authorized);
@@ -59,8 +58,6 @@ contract CrossChainPaymaster is
     // Price oracle for conversions
     IROFLPriceOracle public priceOracle;
 
-    // ROFL operator (allowed to trigger processing, pause, config)
-    address public roflOperator;
 
     // Duplicate prevention mapping (paymentId => processed)
     mapping(bytes32 => bool) public processedPayments;
@@ -77,7 +74,6 @@ contract CrossChainPaymaster is
     // ---------------------------------------------------------------------
     // Errors
     // ---------------------------------------------------------------------
-    error NotOperatorOrOwner();
     error InvalidOracle();
     error ChainDisabled(uint256 chainId);
     error VaultNotAuthorized(uint256 chainId, address vault);
@@ -91,7 +87,6 @@ contract CrossChainPaymaster is
     // ---------------------------------------------------------------------
     function initialize(
         address _owner,
-        address _operator,
         address _priceOracle,
         address _shoyuBashi,
         SapphireTypes.DistributionLimits memory _limits
@@ -104,7 +99,6 @@ contract CrossChainPaymaster is
 
         if (_priceOracle == address(0)) revert InvalidOracle();
         priceOracle = IROFLPriceOracle(_priceOracle);
-        roflOperator = _operator;
         limits = _limits;
 
         // Transfer ownership to requested owner if different
@@ -118,18 +112,12 @@ contract CrossChainPaymaster is
     // ---------------------------------------------------------------------
     // Modifiers
     // ---------------------------------------------------------------------
-    modifier onlyOperatorOrOwner() {
-        if (msg.sender != roflOperator && msg.sender != owner()) revert NotOperatorOrOwner();
-        _;
-    }
+    // No operator role; owner controls admin functions
 
     // ---------------------------------------------------------------------
     // Admin
     // ---------------------------------------------------------------------
-    function setOperator(address _operator) external onlyOwner {
-        emit OperatorUpdated(roflOperator, _operator);
-        roflOperator = _operator;
-    }
+    // Removed operator role and setter
 
     function setPriceOracle(address _oracle) external onlyOwner {
         if (_oracle == address(0)) revert InvalidOracle();
@@ -161,11 +149,11 @@ contract CrossChainPaymaster is
         emit DistributionLimitsUpdated(dailyLimit, perTxLimit, enabled);
     }
 
-    function pause() external onlyOperatorOrOwner {
+    function pause() external onlyOwner {
         _pause();
     }
 
-    function unpause() external onlyOperatorOrOwner {
+    function unpause() external onlyOwner {
         _unpause();
     }
 

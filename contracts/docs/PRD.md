@@ -111,7 +111,7 @@ Create a secure, efficient, and extensible smart contract system that enables us
   - Implement staleness checks
 
 ##### 2.2.2 Access Control
-- **Requirement**: Restrict price updates to authorized operators
+- **Requirement**: Restrict price updates to owner-only admin
 - **Acceptance Criteria**:
   - Only designated updater can set prices
   - Batch price updates for gas efficiency
@@ -126,7 +126,7 @@ Create a secure, efficient, and extensible smart contract system that enables us
 - **Requirement**: Implement granular access control
 - **Acceptance Criteria**:
   - Owner role for admin functions
-  - ROFL operator role for deposit processing
+  - Owner-only admin for configuration
   - Price updater role for oracle updates
   - Role transfer mechanisms
 
@@ -366,7 +366,7 @@ struct DepositData {
 3. Deploy paymaster contract
 4. Deploy vault contract
 5. Configure all contracts
-6. Set operator addresses
+6. Configure owner and oracle
 7. Fund paymaster with ROSE
 
 #### Verification Steps
@@ -424,7 +424,7 @@ struct DepositData {
 - Withdrawal mechanism (ROSE → USDC)
 
 ### Phase 3 Features
-- Decentralized operator set
+- No separate operator role
 - Optimistic verification mode
 - Dynamic fee adjustments
 - Liquidity pool integration

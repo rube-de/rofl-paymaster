@@ -69,7 +69,7 @@ Deterministic `paymentId` used for replay protection and auditability:
 - Authorized chains and vaults: only allowed if chain is enabled and source vault is authorized.
 - Replay protection: `processedPayments[paymentId]` prevents double distribution.
 - Distribution limits: per-tx and daily caps with daily reset.
-- Pausable and upgradeable (UUPS): owner/operator policy controls and safe upgrades.
+- Pausable and upgradeable (UUPS): owner-controlled admin and safe upgrades.
 
 ## 7. Contract APIs
 
@@ -95,7 +95,7 @@ Sapphire: `CrossChainPaymaster`
 ## 8. Configuration & Tasks
 
 Sapphire deployment
-- `bunx hardhat deploy:cross-chain-paymaster --network <sapphire> --owner <addr> --operator <addr> --oracle <addr> --shoyubashi <addr> --daily <rose> --pertx <rose> --enabled true`
+- `bunx hardhat deploy:cross-chain-paymaster --network <sapphire> --owner <addr> --oracle <addr> --shoyubashi <addr> --daily <rose> --pertx <rose> --enabled true`
 
 Sapphire post-deploy
 - `bunx hardhat configure:cross-chain-paymaster --network <sapphire> --proxy <paymaster> --chainid <id> --enabled true --confirmations <n> --blocktime <sec> --maxrose <rose>`
@@ -151,4 +151,3 @@ Mock vs Production ShoyuBashi
 - Proof batching for gas optimization
 - Message execution payloads post-distribution
 - Automated relayer service with monitoring and retries
-

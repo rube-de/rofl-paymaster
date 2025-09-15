@@ -13,7 +13,7 @@ See `.env.example` for required variables. Copy to `.env` and fill values before
 
 ## Environment Variables
 
-- CrossChainPaymaster: `OWNER`, `OPERATOR`, `PRICE_ORACLE`, `SHOYU_BASHI`
+- CrossChainPaymaster: `OWNER`, `PRICE_ORACLE`, `SHOYU_BASHI`
 - PaymasterVault: `PAYMASTER_VAULT_OWNER`, `BLOCK_HEADER_REQUESTER`
 - Optional limits: `DAILY_LIMIT_ROSE`, `PER_TX_LIMIT_ROSE`, `LIMITS_ENABLED`
 - Upgrade helpers: `PAYMASTER_SAPPHIRE_PROXY`, `PAYMASTER_VAULT_PROXY`, `RUN_VALIDATION`
@@ -24,9 +24,9 @@ See `.env.example` for required variables. Copy to `.env` and fill values before
 
 - Task: `bun hardhat deploy:cross-chain-paymaster --network sapphireTestnet`
 - Env (or flags):
-  - `OWNER`, `OPERATOR`, `PRICE_ORACLE`, `SHOYU_BASHI`
+  - `OWNER`, `PRICE_ORACLE`, `SHOYU_BASHI`
   - `DAILY_LIMIT_ROSE` (default 10000), `PER_TX_LIMIT_ROSE` (default 100), `LIMITS_ENABLED` (default true)
-- Outputs proxy, implementation, owner, operator
+- Outputs proxy, implementation, owner
 
 ### Configure
 

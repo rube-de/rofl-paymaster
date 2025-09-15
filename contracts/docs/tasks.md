@@ -744,7 +744,7 @@ Note: Architecture now uses Hashi for cross-chain verification. Remote deposits 
     },
     {
       "id": "CONFIG-001-05",
-      "description": "Configure ROFL operator permissions",
+      "description": "Configure paymaster owner and limits",
       "status": "pending"
     },
     {
@@ -762,7 +762,7 @@ Note: Architecture now uses Hashi for cross-chain verification. Remote deposits 
     "USDC configuration accepts $10-$10k deposits",
     "Base chain configuration allows proof processing",
     "ShoyuBashi and price oracle addresses set and connectivity verified",
-    "ROFL operator can process deposits",
+    "Owner can administer configuration",
     "Daily limits configured appropriately",
     "Initial ROSE funding sufficient for operations"
   ],

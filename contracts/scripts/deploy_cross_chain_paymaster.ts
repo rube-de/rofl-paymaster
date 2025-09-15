@@ -3,12 +3,11 @@ import "dotenv/config";
 
 async function main() {
   const owner = process.env.OWNER as string;
-  const operator = process.env.OPERATOR as string;
   const priceOracle = process.env.PRICE_ORACLE as string;
   const shoyuBashi = process.env.SHOYU_BASHI as string;
 
-  if (!owner || !operator || !priceOracle || !shoyuBashi) {
-    throw new Error("Missing env: OWNER, OPERATOR, PRICE_ORACLE, SHOYU_BASHI");
+  if (!owner || !priceOracle || !shoyuBashi) {
+    throw new Error("Missing env: OWNER, PRICE_ORACLE, SHOYU_BASHI");
   }
 
   const dailyLimitRose = process.env.DAILY_LIMIT_ROSE ?? "10000";
@@ -30,7 +29,7 @@ async function main() {
   const CrossChainPaymaster = await ethers.getContractFactory("CrossChainPaymaster");
   const proxy = await upgrades.deployProxy(
     CrossChainPaymaster,
-    [owner, operator, priceOracle, shoyuBashi, limits],
+    [owner, priceOracle, shoyuBashi, limits],
     {
       kind: "uups",
       initializer: "initialize",
