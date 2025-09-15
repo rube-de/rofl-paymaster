@@ -5,16 +5,16 @@ import "dotenv/config";
 Deploys PaymasterVault (UUPS proxy) on a remote chain.
 
 Env vars:
-- VAULT_OWNER (fallback: OWNER)
+- PAYMASTER_VAULT_OWNER
 - BLOCK_HEADER_REQUESTER
 */
 
 async function main() {
-  const vaultOwner = (process.env.VAULT_OWNER || process.env.OWNER) as string;
+  const vaultOwner = process.env.PAYMASTER_VAULT_OWNER as string;
   const blockHeaderRequester = process.env.BLOCK_HEADER_REQUESTER as string;
 
   if (!vaultOwner || !blockHeaderRequester) {
-    throw new Error("Missing env: VAULT_OWNER/OWNER and BLOCK_HEADER_REQUESTER");
+    throw new Error("Missing env: PAYMASTER_VAULT_OWNER and BLOCK_HEADER_REQUESTER");
   }
 
   const PaymasterVault = await ethers.getContractFactory("PaymasterVault");
@@ -46,4 +46,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

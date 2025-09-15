@@ -8,13 +8,13 @@ type ProofTuple = [number, number, string, number, string[], string[], string, n
 
 task("pay:relay", "Relay PaymentInitiated proof to CrossChainPaymaster on Sapphire")
   .addOptionalParam("proof", "Proof data (JSON file path or inline JSON string)", "proof.json")
-  .addOptionalParam("paymaster", "CrossChainPaymaster proxy address on Sapphire (or set PAYMASTER_PROXY_ADDRESS)")
+  .addOptionalParam("paymaster", "CrossChainPaymaster proxy address on Sapphire (or set PAYMASTER_SAPPHIRE_PROXY)")
   .setAction(async (args, hre: HardhatRuntimeEnvironment) => {
     const { ethers } = hre;
 
     console.log("🌉 Relaying payment to CrossChainPaymaster");
-    const paymasterAddress = args.paymaster ?? process.env.PAYMASTER_PROXY_ADDRESS
-    if (!paymasterAddress) throw new Error("Missing paymaster: pass --paymaster or set PAYMASTER_PROXY_ADDRESS env");
+    const paymasterAddress = args.paymaster ?? process.env.PAYMASTER_SAPPHIRE_PROXY
+    if (!paymasterAddress) throw new Error("Missing paymaster: pass --paymaster or set PAYMASTER_SAPPHIRE_PROXY env");
     console.log("Paymaster:", paymasterAddress);
     console.log("Network:", hre.network.name);
 

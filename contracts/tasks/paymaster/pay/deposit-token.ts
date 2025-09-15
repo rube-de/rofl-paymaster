@@ -14,7 +14,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 task("pay:deposit", "Deposit ERC20 into PaymasterVault and emit PaymentInitiated")
   .addOptionalParam("amount", "Amount in whole tokens (uses --decimals / env to parse)", "1")
   .addOptionalParam("recipient", "Recipient address on Sapphire (defaults to sender)")
-  .addOptionalParam("vault", "PaymasterVault proxy address on the source chain (or set VAULT_PROXY_ADDRESS)")
+  .addOptionalParam("vault", "PaymasterVault proxy address on the source chain (or set PAYMASTER_VAULT_PROXY)")
   .addOptionalParam("token", "ERC20 token address to deposit (or set PAYMASTER_VAULT_TOKEN)")
   .addOptionalParam("decimals", "Token decimals (auto-detected, or set PAYMASTER_VAULT_TOKEN_DECIMALS)")
   .addOptionalParam("from", "Sender address (defaults to first signer)")
@@ -22,8 +22,8 @@ task("pay:deposit", "Deposit ERC20 into PaymasterVault and emit PaymentInitiated
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     const { ethers } = hre;
 
-    const vaultAddr: string = args.vault ?? process.env.VAULT_PROXY_ADDRESS;
-    if (!vaultAddr) throw new Error("Missing --vault and VAULT_PROXY_ADDRESS env");
+    const vaultAddr: string = args.vault ?? process.env.PAYMASTER_VAULT_PROXY as string;
+    if (!vaultAddr) throw new Error("Missing --vault and PAYMASTER_VAULT_PROXY env");
 
     const tokenAddr: string = args.token ?? process.env.PAYMASTER_VAULT_TOKEN;
     if (!tokenAddr) throw new Error("Missing --token and PAYMASTER_VAULT_TOKEN env");

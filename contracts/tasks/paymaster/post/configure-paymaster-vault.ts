@@ -9,7 +9,7 @@ function toBool(v?: string | boolean): boolean {
 }
 
 task("configure:paymaster-vault", "Post-deploy configuration for PaymasterVault")
-  .addOptionalParam("proxy", "Deployed PaymasterVault proxy address (or set env VAULT_PROXY_ADDRESS)")
+  .addOptionalParam("proxy", "Deployed PaymasterVault proxy address (or set env PAYMASTER_VAULT_PROXY)")
   .addOptionalParam("token", "ERC20 token address to configure (or set env PAYMASTER_VAULT_TOKEN)")
   .addOptionalParam("enabled", "Enable/disable deposits for token (default: true)")
   .addOptionalParam("decimals", "Token decimals (0-18; required if setting min/max)")
@@ -21,8 +21,8 @@ task("configure:paymaster-vault", "Post-deploy configuration for PaymasterVault"
     const { ethers } = hre;
 
     // Resolve inputs with env fallbacks
-    const proxy: string = args.proxy ?? process.env.VAULT_PROXY_ADDRESS;
-    if (!proxy) throw new Error("Missing proxy: pass --proxy or set VAULT_PROXY_ADDRESS env");
+    const proxy: string = args.proxy ?? process.env.PAYMASTER_VAULT_PROXY as string;
+    if (!proxy) throw new Error("Missing proxy: pass --proxy or set PAYMASTER_VAULT_PROXY env");
 
     const token: string | undefined = args.token ?? process.env.PAYMASTER_VAULT_TOKEN;
     const enabled: boolean = args.enabled !== undefined

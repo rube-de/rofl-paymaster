@@ -2,13 +2,13 @@ import { task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 task("upgrade:cross-chain-paymaster", "Upgrade CrossChainPaymaster UUPS proxy")
-  .addOptionalParam("proxy", "Proxy address (falls back to PAYMASTER_PROXY_ADDRESS)")
+  .addOptionalParam("proxy", "Proxy address (or set PAYMASTER_SAPPHIRE_PROXY)")
   .addOptionalParam("skipcheck", "Skip storage checks (default false)")
   .setAction(async (args: { proxy?: string; skipcheck?: string }, hre: HardhatRuntimeEnvironment) => {
     const { ethers, upgrades } = hre;
 
-    const proxy = args.proxy || process.env.PAYMASTER_PROXY_ADDRESS || process.env.PROXY_ADDRESS;
-    if (!proxy) throw new Error("Missing proxy: pass --proxy or set PAYMASTER_PROXY_ADDRESS env");
+    const proxy = args.proxy || process.env.PAYMASTER_SAPPHIRE_PROXY as string;
+    if (!proxy) throw new Error("Missing proxy: pass --proxy or set PAYMASTER_SAPPHIRE_PROXY env");
 
     const unsafeSkipStorageCheck = args.skipcheck ? args.skipcheck.toLowerCase() === "true" : (process.env.RUN_VALIDATION ?? "true").toLowerCase() !== "true";
 

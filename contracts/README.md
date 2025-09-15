@@ -14,9 +14,9 @@ See `.env.example` for required variables. Copy to `.env` and fill values before
 ## Environment Variables
 
 - CrossChainPaymaster: `OWNER`, `OPERATOR`, `PRICE_ORACLE`, `SHOYU_BASHI`
-- PaymasterVault: `VAULT_OWNER` (or `OWNER`), `BLOCK_HEADER_REQUESTER`
+- PaymasterVault: `PAYMASTER_VAULT_OWNER`, `BLOCK_HEADER_REQUESTER`
 - Optional limits: `DAILY_LIMIT_ROSE`, `PER_TX_LIMIT_ROSE`, `LIMITS_ENABLED`
-- Upgrade helpers: `PAYMASTER_PROXY_ADDRESS`, `VAULT_PROXY_ADDRESS`, `RUN_VALIDATION`
+- Upgrade helpers: `PAYMASTER_SAPPHIRE_PROXY`, `PAYMASTER_VAULT_PROXY`, `RUN_VALIDATION`
 
 ## CrossChainPaymaster
 
@@ -44,14 +44,14 @@ See `.env.example` for required variables. Copy to `.env` and fill values before
 ### Upgrade
 
 - Task: `bun hardhat upgrade:cross-chain-paymaster --proxy <paymaster> [--skipcheck true] --network sapphireTestnet`
-- Or env: `PAYMASTER_PROXY_ADDRESS`, `RUN_VALIDATION`
+- Or env: `PAYMASTER_SAPPHIRE_PROXY`, `RUN_VALIDATION`
 
 ## PaymasterVault (Remote Chain)
 
 ### Deploy
 
 - Task: `bun hardhat deploy:paymaster-vault --network baseSepolia`
-- Env (or flags): `VAULT_OWNER` (or `OWNER`), `BLOCK_HEADER_REQUESTER`
+- Env (or flags): `PAYMASTER_VAULT_OWNER`, `BLOCK_HEADER_REQUESTER`
 
 ### Configure Token
 
@@ -65,7 +65,7 @@ See `.env.example` for required variables. Copy to `.env` and fill values before
 ### Upgrade
 
 - Task: `bun hardhat upgrade:paymaster-vault --proxy <vault> [--skipcheck true] --network baseSepolia`
-- Or env: `VAULT_PROXY_ADDRESS`, `RUN_VALIDATION`
+- Or env: `PAYMASTER_VAULT_PROXY`, `RUN_VALIDATION`
 
 ## Scripts
 

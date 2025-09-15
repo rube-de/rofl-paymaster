@@ -5,13 +5,13 @@ import "dotenv/config";
 Upgrades an existing PaymasterVault UUPS proxy.
 
 Env vars:
-- VAULT_PROXY_ADDRESS (fallback: PROXY_ADDRESS)
+- PAYMASTER_VAULT_PROXY
 - RUN_VALIDATION ("true" | "false", default: "true")
 */
 
 async function main() {
-  const proxyAddress = (process.env.VAULT_PROXY_ADDRESS || process.env.PROXY_ADDRESS) as string;
-  if (!proxyAddress) throw new Error("Missing env: VAULT_PROXY_ADDRESS or PROXY_ADDRESS");
+  const proxyAddress = process.env.PAYMASTER_VAULT_PROXY as string;
+  if (!proxyAddress) throw new Error("Missing env: PAYMASTER_VAULT_PROXY");
 
   const PaymasterVault = await ethers.getContractFactory("PaymasterVault");
   const runValidation = (process.env.RUN_VALIDATION ?? "true").toLowerCase() === "true";
@@ -31,4 +31,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-
