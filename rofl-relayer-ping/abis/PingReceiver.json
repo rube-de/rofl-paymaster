@@ -1,0 +1,293 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_shoyuBashi",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "BlockHeaderNotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "ancestralBlockHeaderHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "blockHeaderHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "ConflictingBlockHeader",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ContentLengthMismatch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EmptyItem",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidDataRemainder",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidEventFormat",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidHeader",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidLogIndex",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidProof",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidReceipt",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "pingId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "PingAlreadyReceived",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnexpectedList",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnexpectedString",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnsupportedTxType",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "sourceChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "pingId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "originalSender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "originalBlockNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "PingReceived",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "pingId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "success",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "PingVerified",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "SHOYU_BASHI",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "pingId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getPingStatus",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "received",
+          "type": "bool"
+        },
+        {
+          "internalType": "address",
+          "name": "originalSender",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "originalBlockNumber",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "blockNumber",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "blockHeader",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ancestralBlockNumber",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "ancestralBlockHeaders",
+              "type": "bytes[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "receiptProof",
+              "type": "bytes[]"
+            },
+            {
+              "internalType": "bytes",
+              "name": "transactionIndex",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "logIndex",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ReceiptProof",
+          "name": "proof",
+          "type": "tuple"
+        }
+      ],
+      "name": "receivePing",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "receivedPings",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "received",
+          "type": "bool"
+        },
+        {
+          "internalType": "address",
+          "name": "originalSender",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "originalBlockNumber",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "contractName": "PingReceiver",
+  "address": "0x1f54b7AF3A462aABed01D5910a3e5911e76D4B51",
+  "chainId": 23295,
+  "shoyuBashi": "0x35b6fCe2459fd5A741a4a96dbFF5C852f60Ebb8d"
+}

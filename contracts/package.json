@@ -1,11 +1,25 @@
 {
   "name": "hardhat-project",
+  "scripts": {
+    "postinstall": "patch-package"
+  },
   "devDependencies": {
+    "@ethereumjs/block": "^10.0.0",
+    "@ethereumjs/trie": "^6.2.1",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@oasisprotocol/sapphire-contracts": "^0.2.14",
     "@openzeppelin/contracts": "^5.4.0",
+    "@openzeppelin/hardhat-upgrades": "^3.9.1",
     "@openzeppelin/merkle-tree": "^1.0.8",
+    "@openzeppelin/upgrades-core": "^1.44.1",
+    "dotenv": "^17.2.2",
     "hardhat": "^2.26.1",
+    "hardhat-switch-network": "^1.2.0",
+    "patch-package": "^8.0.0",
     "solidity-rlp": "^2.0.8"
+  },
+  "dependencies": {
+    "@eth-optimism/contracts-bedrock": "^0.17.3",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0"
   }
 }

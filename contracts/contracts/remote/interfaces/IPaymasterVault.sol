@@ -66,6 +66,20 @@ interface IPaymasterVault {
     event DepositsUnpaused(address account);
 
     /**
+     * @notice Emitted when the owner withdraws accumulated tokens from the vault
+     * @param token Address of the withdrawn ERC20 token
+     * @param to Recipient address receiving the tokens
+     * @param amount Amount of tokens withdrawn
+     * @param operator Address that initiated the withdrawal (owner)
+     */
+    event TokenWithdrawn(
+        address indexed token,
+        address indexed to,
+        uint256 amount,
+        address indexed operator
+    );
+
+    /**
      * @notice Deposits ERC20 tokens into the vault for cross-chain ROSE distribution
      * @dev MUST use nonReentrant modifier to prevent reentrancy attacks
      * @dev MUST use whenNotPaused modifier to respect pause state
@@ -147,4 +161,17 @@ interface IPaymasterVault {
      * @return paused True if deposits are paused
      */
     function depositsArePaused() external view returns (bool paused);
+
+    /**
+     * @notice Withdraw accumulated ERC20 tokens to a treasury address
+     * @dev MUST be restricted to owner; SHOULD use nonReentrant in implementation
+     * @param token ERC20 token to withdraw
+     * @param to Recipient address
+     * @param amount Amount to withdraw
+     */
+    function withdrawToken(
+        IERC20 token,
+        address to,
+        uint256 amount
+    ) external;
 }
