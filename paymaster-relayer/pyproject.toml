@@ -4,13 +4,13 @@ version = "0.1.0"
 description = "Paymaster Relayer for blockchain bridge operations"
 requires-python = ">=3.12"
 dependencies = [
-    "oasis-sapphire-py>=0.4.0",
     "aiohttp",
     "web3",
     "rlp>=3.0.0",
     "trie>=2.0.0",
     "httpx",
     "eth-utils>=5.3.0",
+    "cbor2>=5.0.0",
 ]
 
 [dependency-groups]
