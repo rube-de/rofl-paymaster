@@ -24,7 +24,7 @@ task("configure:paymaster-vault", "Post-deploy configuration for PaymasterVault"
     const proxy: string = args.proxy ?? process.env.VAULT_PROXY_ADDRESS;
     if (!proxy) throw new Error("Missing proxy: pass --proxy or set VAULT_PROXY_ADDRESS env");
 
-    const token: string | undefined = args.token ?? process.env.PAYMASTER_VAULT_TOKEN ?? "0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0";
+    const token: string | undefined = args.token ?? process.env.PAYMASTER_VAULT_TOKEN;
     const enabled: boolean = args.enabled !== undefined
       ? toBool(args.enabled)
       : (process.env.PAYMASTER_VAULT_TOKEN_ENABLED !== undefined ? toBool(process.env.PAYMASTER_VAULT_TOKEN_ENABLED) : true);
