@@ -1,6 +1,6 @@
-# ROFL Relayer
+# Paymaster Relayer
 
-Automated cross-chain message relay service that monitors Ping events on Ethereum and relays them to Oasis Sapphire using cryptographic proofs.
+Automated relay that watches PaymasterVault `PaymentInitiated` events on the source chain and submits Hashi receipt proofs to `CrossChainPaymaster` on Oasis Sapphire.
 
 ## Quick Start
 
@@ -28,12 +28,12 @@ docker compose -f compose.local.yaml up
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SOURCE_RPC_URL` | Yes | Ethereum RPC endpoint (WebSocket or HTTP) |
-| `PING_SENDER_ADDRESS` | Yes | PingSender contract address on source chain |
-| `PING_RECEIVER_ADDRESS` | Yes | PingReceiver contract address on target chain |
-| `ROFL_ADAPTER_ADDRESS` | Yes | ROFLAdapter contract for HashStored events |
-| `TARGET_NETWORK` | No | Target network (default: `sapphire-testnet`) |
-| `PRIVATE_KEY` | Local only | Private key for signing transactions |
+| `SOURCE_RPC_URL` | Yes | Source chain RPC endpoint (HTTP) |
+| `PAYMASTER_VAULT_ADDRESS` | Yes | PaymasterVault contract address on source chain |
+| `TARGET_RPC_URL` | Yes | Sapphire RPC endpoint |
+| `PAYMASTER_PROXY_ADDRESS` | Yes | CrossChainPaymaster proxy address on Sapphire |
+| `ROFL_ADAPTER_ADDRESS` | Yes | ROFLAdapter on Sapphire to monitor `HashStored` |
+| `PRIVATE_KEY` | Local only | Private key for signing transactions (non-ROFL mode) |
 
 ## Development
 
@@ -53,13 +53,13 @@ volumes:
 # Install dependencies
 uv sync
 
-# Run locally
-SOURCE_RPC_URL=wss://ethereum-sepolia-rpc.publicnode.com \
-PING_SENDER_ADDRESS=0x... \
-PING_RECEIVER_ADDRESS=0x... \
-ROFL_ADAPTER_ADDRESS=0x... \
+# Run locally (non-ROFL)
+SOURCE_RPC_URL=https://... \
+PAYMASTER_VAULT_ADDRESS=0x... \
+TARGET_RPC_URL=https://testnet.sapphire.oasis.io \
+PAYMASTER_PROXY_ADDRESS=0x... \
 PRIVATE_KEY=0x... \
-uv run python main.py --local
+uv run python -m rofl_relayer --local
 ```
 
 ## Testing
@@ -80,13 +80,11 @@ The test suite validates:
 ## Architecture
 
 ```
-main.py                      # Minimal CLI entry point
-src/rofl_relayer/
+rofl_relayer/
   config.py                  # Configuration management
   relayer.py                 # Main relayer service
   utils/                     # Utility modules
     contract_utility.py      # Contract interactions
-    event_listener_utility.py # WebSocket event monitoring
     polling_event_listener.py # Polling-based event monitoring
     rofl_utility.py          # ROFL transaction submission
 tests/

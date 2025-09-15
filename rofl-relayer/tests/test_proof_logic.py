@@ -44,7 +44,7 @@ def test_rlp_encoding():
     print(f"✅ Index 137: {Web3.to_hex(index_137)}")
 
     # Verify against proof.json value
-    proof_path = Path(__file__).parent.parent.parent / "ping" / "proof.json"
+    proof_path = Path(__file__).parent.parent.parent / "pay" / "proof.json"
     if proof_path.exists():
         with open(proof_path) as f:
             typescript_proof = json.load(f)
@@ -104,7 +104,7 @@ def test_proof_structure():
     print("\n🧪 Testing proof structure")
 
     # Load TypeScript proof to verify structure
-    proof_path = Path(__file__).parent.parent.parent / "ping" / "proof.json"
+    proof_path = Path(__file__).parent.parent.parent / "pay" / "proof.json"
     if not proof_path.exists():
         print("⚠️  TypeScript proof not found, skipping structure test")
         return

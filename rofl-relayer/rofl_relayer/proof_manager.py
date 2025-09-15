@@ -14,7 +14,7 @@ from trie import HexaryTrie
 from web3 import Web3
 from web3.types import TxParams, TxReceipt, Wei
 
-from .models import PingEvent
+from .models import PaymentEvent
 from .utils.blockchain_encoder import BlockchainEncoder
 
 if TYPE_CHECKING:
@@ -45,64 +45,53 @@ class ProofManager:
         self.contract_util = contract_util
         self.rofl_util = rofl_util
 
-    def _get_transaction_local_index(self, ping_event: PingEvent) -> int:
+    def _get_transaction_local_index(self, payment_event: PaymentEvent) -> int:
         """
-        Find the transaction-local index for a specific Ping event.
+        Find the transaction-local index for a specific PaymentInitiated event.
 
-        This matches the event by its content rather than using global log index.
-        For Ping events:
-        - Event signature: Ping(address,uint256)
-        - Topics[0]: keccak256("Ping(address,uint256)")
-        - Topics[1]: indexed sender address (padded to 32 bytes)
-        - Topics[2]: indexed block number (as 32 bytes)
+        This matches the event by signature and address rather than global log index.
+        For PaymentInitiated events:
+        - Event signature: PaymentInitiated(address,address,address,uint256,bytes32)
+        - Topics[0]: keccak256("PaymentInitiated(address,address,address,uint256,bytes32)")
+        - Topics[1]: indexed payer
+        - Topics[2]: indexed recipient
+        - Topics[3]: indexed token
 
         Args:
-            ping_event: The PingEvent object containing tx_hash, sender, and block_number
+            payment_event: The PaymentEvent object with tx_hash and block_number
 
         Returns:
             Transaction-local index (position within transaction's logs)
         """
-        receipt = self.w3_source.eth.get_transaction_receipt(HexStr(ping_event.tx_hash))
+        receipt = self.w3_source.eth.get_transaction_receipt(HexStr(payment_event.tx_hash))
         if not receipt or "logs" not in receipt:
-            logger.warning(f"No logs found in transaction {ping_event.tx_hash}")
+            logger.warning(f"No logs found in transaction {payment_event.tx_hash}")
             return 0
 
-        # Calculate Ping event signature hash
-        ping_topic = Web3.keccak(text="Ping(address,uint256)")
+        # Calculate PaymentInitiated event signature hash
+        payment_topic = Web3.keccak(
+            text="PaymentInitiated(address,address,address,uint256,bytes32)"
+        )
 
-        # Prepare sender address (pad to 32 bytes)
-        sender_bytes = Web3.to_bytes(hexstr=ping_event.sender)
-        sender_topic = sender_bytes.rjust(32, b"\0")
-
-        # Prepare block number (as 32 bytes)
-        block_topic = ping_event.block_number.to_bytes(32, "big")
-
-        # Find matching Ping event in transaction logs
+        # Find matching PaymentInitiated event in transaction logs
         for i, log in enumerate(receipt["logs"]):
             topics = log.get("topics", [])
-            if (
-                len(topics) >= 3
-                and topics[0] == ping_topic
-                and topics[1] == sender_topic
-                and topics[2] == block_topic
-            ):
-                logger.info(f"Found Ping event at transaction-local index {i}")
+            if len(topics) >= 1 and topics[0] == payment_topic:
+                logger.info(f"Found PaymentInitiated at transaction-local index {i}")
                 return i
 
         # If not found (shouldn't happen), default to 0
-        logger.warning(
-            "Ping event not found in transaction logs, defaulting to index 0"
-        )
+        logger.warning("PaymentInitiated not found in transaction logs, defaulting to index 0")
         return 0
 
-    async def generate_proof(self, ping_event: PingEvent) -> list[Any]:
+    async def generate_proof(self, payment_event: PaymentEvent) -> list[Any]:
         """
-        Generate Hashi-format proof for a Ping event.
+        Generate Hashi-format proof for a PaymentInitiated event.
 
         Uses eth_getBlockReceipts for efficient batch receipt fetching when available.
 
         Args:
-            ping_event: The PingEvent object containing all event data
+            payment_event: The PaymentEvent object containing all event data
 
         Returns:
             8-element array matching TypeScript format for Hashi proof
@@ -111,15 +100,15 @@ class ProofManager:
             ValueError: If receipt or block not found, or proof generation fails
         """
         # Calculate transaction-local log index from event content
-        log_index = self._get_transaction_local_index(ping_event)
+        log_index = self._get_transaction_local_index(payment_event)
         logger.info(
-            f"Generating proof for tx {ping_event.tx_hash}, transaction-local log index {log_index}"
+            f"Generating proof for tx {payment_event.tx_hash}, transaction-local log index {log_index}"
         )
 
         # 1. Fetch receipt and block
-        receipt = self.w3_source.eth.get_transaction_receipt(HexStr(ping_event.tx_hash))
+        receipt = self.w3_source.eth.get_transaction_receipt(HexStr(payment_event.tx_hash))
         if not receipt:
-            raise ValueError(f"Transaction receipt not found for {ping_event.tx_hash}")
+            raise ValueError(f"Transaction receipt not found for {payment_event.tx_hash}")
 
         block_number = receipt["blockNumber"]
         block = self.w3_source.eth.get_block(block_number, full_transactions=True)
@@ -163,16 +152,14 @@ class ProofManager:
         receipt_key = BlockchainEncoder.encode_transaction_index(tx_index)
         proof_nodes = trie.get_proof(receipt_key)
 
-        # Convert proof nodes to hex strings
         merkle_proof = [Web3.to_hex(rlp.encode(node)) for node in proof_nodes]
 
         # 6. Encode block header
         encoded_block_header = BlockchainEncoder.encode_block_header(block)
 
-        # 7. Get chain ID
         chain_id = int(self.w3_source.eth.chain_id)
 
-        # 8. Create proof structure for Hashi
+        # 7. Create proof structure for Hashi
         proof = [
             chain_id,  # chainId
             block_number,  # blockNumber
@@ -189,25 +176,24 @@ class ProofManager:
         )
         return proof
 
-    async def submit_proof(self, proof: list[Any], receiver_address: str) -> str:
+    async def submit_proof(self, proof: list[Any], paymaster_address: str) -> str:
         """
-        Submit proof to PingReceiver contract.
+        Submit proof to CrossChainPaymaster contract.
 
         Args:
             proof: The generated proof array
-            receiver_address: Address of the PingReceiver contract
+            paymaster_address: Address of the CrossChainPaymaster contract
 
         Returns:
             Transaction hash of the submission
         """
-        logger.info(f"Submitting proof to PingReceiver at {receiver_address}")
+        logger.info(f"Submitting proof to CrossChainPaymaster at {paymaster_address}")
 
-        abi = self.contract_util.get_contract_abi("PingReceiver")
+        abi = self.contract_util.get_contract_abi("CrossChainPaymaster")
         contract = self.contract_util.w3.eth.contract(
-            address=Web3.to_checksum_address(receiver_address), abi=abi
+            address=Web3.to_checksum_address(paymaster_address), abi=abi
         )
 
-        # Convert proof array to struct format expected by PingReceiver
         receipt_proof_struct = {
             "chainId": proof[0],
             "blockNumber": proof[1],
@@ -231,7 +217,7 @@ class ProofManager:
                 "gasPrice": self.contract_util.w3.eth.gas_price,
                 "value": Wei(0),
             }
-            tx_data = contract.functions.receivePing(
+            tx_data = contract.functions.processPayment(
                 receipt_proof_struct
             ).build_transaction(tx_params)
             success = await self.rofl_util.submit_tx(tx_data)
@@ -244,30 +230,30 @@ class ProofManager:
                 raise Exception("ROFL submission failed")
         else:
             # Local mode
-            tx_hash = contract.functions.receivePing(receipt_proof_struct).transact(
+            tx_hash = contract.functions.processPayment(receipt_proof_struct).transact(
                 {"gas": 3000000, "gasPrice": self.contract_util.w3.eth.gas_price}
             )
             logger.info(f"Proof submitted locally: {Web3.to_hex(tx_hash)}")
             return Web3.to_hex(tx_hash)
 
-    async def process_ping_event(
-        self, ping_event: PingEvent, receiver_address: str
+    async def process_payment_event(
+        self, payment_event: PaymentEvent, paymaster_address: str
     ) -> str:
         """
-        Complete flow: generate and submit proof for a ping event.
+        Complete flow: generate and submit proof for a PaymentInitiated event.
 
         Args:
-            ping_event: The PingEvent object containing tx_hash, sender, and block_number
-            receiver_address: Address of the PingReceiver contract
+            payment_event: The PaymentEvent object containing tx_hash and block_number
+            paymaster_address: Address of the CrossChainPaymaster contract
 
         Returns:
             Transaction hash of the proof submission
         """
         logger.info(
-            f"Processing ping event with tx_hash={ping_event.tx_hash}, sender={ping_event.sender}, block={ping_event.block_number}"
+            f"Processing payment event with tx_hash={payment_event.tx_hash}, block={payment_event.block_number}"
         )
-        proof = await self.generate_proof(ping_event)
-        return await self.submit_proof(proof, receiver_address)
+        proof = await self.generate_proof(payment_event)
+        return await self.submit_proof(proof, paymaster_address)
 
     def _get_block_receipts(self, block_number: int) -> list[TxReceipt]:
         """

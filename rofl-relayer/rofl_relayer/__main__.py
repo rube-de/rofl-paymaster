@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 async def main():
-    """Main entry point for the ROFL Relayer."""
+    """Main entry point for the Paymaster Relayer."""
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="ROFL Relayer")
+    parser = argparse.ArgumentParser(description="Paymaster Relayer")
     parser.add_argument(
         "--local",
         action="store_true",
@@ -23,7 +23,7 @@ async def main():
     )
     args = parser.parse_args()
 
-    logger.info(f"=== ROFL Relayer Starting {'(LOCAL MODE)' if args.local else ''} ===")
+    logger.info(f"=== Paymaster Relayer Starting {'(LOCAL MODE)' if args.local else ''} ===")
 
     relayer = None
 
@@ -36,9 +36,9 @@ async def main():
         logger.error("Required environment variables:")
         logger.error("  - SOURCE_RPC_URL: Source chain RPC endpoint (e.g., Ethereum)")
         logger.error("  - TARGET_RPC_URL: Target chain RPC endpoint (e.g., Sapphire)")
-        logger.error("  - PING_SENDER_ADDRESS: PingSender contract address")
-        logger.error("  - PING_RECEIVER_ADDRESS: PingReceiver contract address")
-        logger.error("  - ROFL_ADAPTER_ADDRESS: ROFLAdapter contract address")
+        logger.error("  - PAYMASTER_VAULT_ADDRESS: PaymasterVault contract address (source)")
+        logger.error("  - PAYMASTER_PROXY_ADDRESS: CrossChainPaymaster contract address (target)")
+        logger.error("  - ROFL_ADAPTER_ADDRESS: ROFLAdapter contract address (target, HashStored)")
         if args.local:
             logger.error("  - PRIVATE_KEY: Private key for signing transactions")
         sys.exit(1)

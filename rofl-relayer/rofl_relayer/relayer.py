@@ -1,5 +1,5 @@
 """
-ROFL Relayer implementation.
+Paymaster Relayer implementation.
 
 This module contains the main relayer service that orchestrates event monitoring
 and coordinates with the event processor for handling blockchain events.
@@ -18,7 +18,6 @@ from .utils.contract_utility import ContractUtility
 from .utils.polling_event_listener import PollingEventListener
 from .utils.rofl_utility import RoflUtility
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
@@ -50,7 +49,7 @@ class ROFLRelayer:
         self.event_processor = EventProcessor(
             proof_manager=self.proof_manager, config=config
         )
-        self.ping_listener: PollingEventListener | None = None
+        self.payment_listener: PollingEventListener | None = None
         self.hash_listener: PollingEventListener | None = None
 
         self.shutdown_event = asyncio.Event()
@@ -82,7 +81,7 @@ class ROFLRelayer:
 
         source_chain_id = self.w3_source.eth.chain_id
         logger.info(
-            f"ROFL Relayer initialized ({'LOCAL' if self.config.local_mode else 'ROFL'} mode, source chain: {source_chain_id})"
+            f"Paymaster Relayer initialized ({'LOCAL' if self.config.local_mode else 'ROFL'} mode, source chain: {source_chain_id})"
         )
 
     @classmethod
@@ -104,20 +103,24 @@ class ROFLRelayer:
         return cls(config)
 
     async def init_event_monitoring(self) -> None:
-        """Initialize polling listeners for both chains."""
+        """Initialize polling listener for PaymentInitiated events."""
         logger.info("Initializing event monitoring...")
 
         # Load ABIs
-        ping_sender_abi = self.contract_util.get_contract_abi("PingSender")
+        paymaster_vault_abi = self.contract_util.get_contract_abi("PaymasterVault")
         rofl_adapter_abi = self.contract_util.get_contract_abi("ROFLAdapter")
 
-        # Initialize PingSender event listener (source chain)
-        self.ping_listener = PollingEventListener(
+        # Initialize PaymentInitiated event listener (source chain)
+        self.payment_listener = PollingEventListener(
             rpc_url=self.config.source_chain.rpc_url,
-            contract_address=self.config.source_chain.ping_sender_address,
-            event_name="Ping",
-            abi=ping_sender_abi,
+            contract_address=self.config.source_chain.paymaster_vault_address,
+            event_name="PaymentInitiated",
+            abi=paymaster_vault_abi,
             lookback_blocks=self.config.monitoring.lookback_blocks,
+        )
+
+        logger.info(
+            f"PaymasterVault listener: {self.config.source_chain.paymaster_vault_address}"
         )
 
         # Initialize ROFLAdapter event listener (target chain - Sapphire)
@@ -128,10 +131,6 @@ class ROFLRelayer:
             abi=rofl_adapter_abi,
             lookback_blocks=self.config.monitoring.lookback_blocks,
         )
-
-        logger.info(
-            f"PingSender listener: {self.config.source_chain.ping_sender_address}"
-        )
         logger.info(
             f"ROFLAdapter listener: {self.config.target_chain.rofl_adapter_address}"
         )
@@ -141,9 +140,9 @@ class ROFLRelayer:
         while self.running:
             await asyncio.sleep(self.STATUS_LOG_INTERVAL)
             stats = self.event_processor.get_stats()
-            if stats["pending_pings"] > 0:
+            if stats["pending_payments"] > 0:
                 logger.info(
-                    f"Status: {stats['pending_pings']} pings pending, "
+                    f"Status: {stats['pending_payments']} payments pending, "
                     f"{stats['processed_hashes']} processed, "
                     f"{stats['stored_hashes']} hashes stored"
                 )
@@ -161,13 +160,11 @@ class ROFLRelayer:
 
     async def _cleanup_tasks(self, tasks: dict[str, asyncio.Task]) -> None:
         """Clean up all tasks and listeners."""
-        # Stop polling listeners
-        if self.ping_listener:
-            await self.ping_listener.stop()
+        if self.payment_listener:
+            await self.payment_listener.stop()
         if self.hash_listener:
             await self.hash_listener.stop()
 
-        # Cancel all running tasks
         for _name, task in tasks.items():
             if not task.done():
                 task.cancel()
@@ -177,7 +174,7 @@ class ROFLRelayer:
     async def run(self) -> None:
         """Main event loop for the relayer service."""
         self.running = True
-        logger.info("ROFL Relayer starting...")
+        logger.info("Paymaster Relayer starting...")
         logger.info(f"Polling interval: {self.config.monitoring.polling_interval}s")
         logger.info(f"Lookback blocks: {self.config.monitoring.lookback_blocks}")
 
@@ -185,14 +182,13 @@ class ROFLRelayer:
         try:
             await self.init_event_monitoring()
 
-            # Ensure listeners are initialized
-            if not self.ping_listener or not self.hash_listener:
+            if not self.payment_listener or not self.hash_listener:
                 raise RuntimeError("Event listeners not properly initialized")
 
             tasks = {
-                "ping": asyncio.create_task(
-                    self.ping_listener.start_polling(
-                        callback=self.event_processor.process_ping_event,
+                "payment": asyncio.create_task(
+                    self.payment_listener.start_polling(
+                        callback=self.event_processor.process_payment_initiated,
                         interval=self.config.monitoring.polling_interval,
                     )
                 ),
@@ -207,7 +203,6 @@ class ROFLRelayer:
 
             logger.info("Event monitoring started, waiting for events...")
 
-            # Wait until shutdown or task failure
             while self.running:
                 try:
                     await asyncio.wait_for(self.shutdown_event.wait(), timeout=1.0)
@@ -215,7 +210,6 @@ class ROFLRelayer:
                 except TimeoutError:
                     pass  # Continue running
 
-                # Check task health
                 if not await self._check_task_health(tasks):
                     logger.error("Critical task failure, shutting down")
                     break
@@ -225,7 +219,7 @@ class ROFLRelayer:
             raise
         finally:
             await self._cleanup_tasks(tasks)
-            logger.info("ROFL Relayer stopped")
+            logger.info("Paymaster Relayer stopped")
 
     def stop(self) -> None:
         """Stop the relayer service."""

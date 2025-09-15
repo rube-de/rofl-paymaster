@@ -1,8 +1,9 @@
 """
-Configuration module for ROFL Relayer.
+Configuration for the Paymaster relayer.
 
-This module provides dataclasses for managing configuration of the ROFL relayer
-that monitors Ping events on Ethereum and relays them to Oasis Sapphire.
+This module provides dataclasses for managing configuration of the relayer
+that monitors PaymentInitiated events on the source chain and relays proofs
+to CrossChainPaymaster on Oasis Sapphire.
 """
 
 import os
@@ -11,10 +12,10 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True, slots=True)
 class SourceChainConfig:
-    """Configuration for the source chain (Ethereum Sepolia)."""
+    """Configuration for the source chain (e.g., Base/Sepolia)."""
 
     rpc_url: str
-    ping_sender_address: str
+    paymaster_vault_address: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,7 +23,7 @@ class TargetChainConfig:
     """Configuration for the target chain (Oasis Sapphire)."""
 
     rpc_url: str
-    ping_receiver_address: str
+    paymaster_address: str
     rofl_adapter_address: str
     private_key: str | None
 
@@ -107,11 +108,11 @@ class RelayerConfig:
                 "Example: https://ethereum-sepolia.publicnode.com"
             )
 
-        ping_sender_address = os.environ.get("PING_SENDER_ADDRESS")
-        if not ping_sender_address:
+        paymaster_vault_address = os.environ.get("PAYMASTER_VAULT_ADDRESS")
+        if not paymaster_vault_address:
             raise ValueError(
-                "PING_SENDER_ADDRESS environment variable is required. "
-                "This is the address of the deployed PingSender contract on source chain"
+                "PAYMASTER_VAULT_ADDRESS environment variable is required. "
+                "This is the address of the deployed PaymasterVault contract on the source chain"
             )
 
         # Target chain configuration
@@ -122,11 +123,13 @@ class RelayerConfig:
                 "Example: https://testnet.sapphire.oasis.io"
             )
 
-        ping_receiver_address = os.environ.get("PING_RECEIVER_ADDRESS")
-        if not ping_receiver_address:
+        paymaster_address = os.environ.get("PAYMASTER_PROXY_ADDRESS") or os.environ.get(
+            "PAYMASTER_ADDRESS"
+        )
+        if not paymaster_address:
             raise ValueError(
-                "PING_RECEIVER_ADDRESS environment variable is required. "
-                "This is the address of the deployed PingReceiver contract on target chain"
+                "PAYMASTER_PROXY_ADDRESS (or PAYMASTER_ADDRESS) environment variable is required. "
+                "This is the address of the CrossChainPaymaster contract on Sapphire"
             )
 
         rofl_adapter_address = os.environ.get("ROFL_ADAPTER_ADDRESS")
@@ -149,12 +152,12 @@ class RelayerConfig:
         # Create configuration objects
         source_chain = SourceChainConfig(
             rpc_url=source_rpc_url,
-            ping_sender_address=ping_sender_address,
+            paymaster_vault_address=paymaster_vault_address,
         )
 
         target_chain = TargetChainConfig(
             rpc_url=target_rpc_url,
-            ping_receiver_address=ping_receiver_address,
+            paymaster_address=paymaster_address,
             rofl_adapter_address=rofl_adapter_address,
             private_key=private_key,
         )
@@ -173,11 +176,11 @@ class RelayerConfig:
 
         print("\n[Source Chain]")
         print(f"  RPC URL: {self.source_chain.rpc_url}")
-        print(f"  PingSender: {self.source_chain.ping_sender_address}")
+        print(f"  PaymasterVault: {self.source_chain.paymaster_vault_address}")
 
         print("\n[Target Chain]")
         print(f"  RPC URL: {self.target_chain.rpc_url}")
-        print(f"  PingReceiver: {self.target_chain.ping_receiver_address}")
+        print(f"  CrossChainPaymaster: {self.target_chain.paymaster_address}")
         print(f"  ROFLAdapter: {self.target_chain.rofl_adapter_address}")
         print(
             f"  Private Key: {'[SET]' if self.target_chain.private_key else '[NOT SET]'}"

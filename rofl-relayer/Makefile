@@ -67,7 +67,7 @@ clean: ## Clean cache and temporary files
 
 run: ## Run the main application
 	@echo "$(BLUE)Running application...$(NC)"
-	uv run python main.py
+	uv run python -m rofl_relayer
 
 dev-setup: install-dev ## Set up development environment
 	@echo "$(GREEN)Development environment setup complete!$(NC)"

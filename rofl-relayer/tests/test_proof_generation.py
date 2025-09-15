@@ -15,7 +15,7 @@ from web3 import Web3
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from rofl_relayer.models import PingEvent
+from rofl_relayer.models import PaymentEvent
 from rofl_relayer.proof_manager import ProofManager
 from rofl_relayer.utils.contract_utility import ContractUtility
 
@@ -27,10 +27,10 @@ async def test_proof_matches_typescript():
     print("🧪 Testing proof generation against TypeScript reference")
 
     # Load TypeScript proof for comparison
-    proof_path = Path(__file__).parent.parent.parent / "ping" / "proof.json"
+    proof_path = Path(__file__).parent.parent.parent / "pay" / "proof.json"
     if not proof_path.exists():
         print(f"❌ TypeScript proof not found at {proof_path}")
-        print("   Please run 'bunx hardhat generate-proof' first in the ping package")
+        print("   Please run 'hardhat pay:generate-proof' in contracts to create proof.json")
         return False
 
     with open(proof_path) as f:
@@ -58,33 +58,31 @@ async def test_proof_matches_typescript():
         print("❌ Failed to connect to source chain")
         return False
 
-    # Get transaction receipt to extract Ping event details
-    print("📥 Fetching transaction receipt to get Ping event details...")
+    # Get transaction receipt to extract PaymentInitiated event details
+    print("📥 Fetching transaction receipt to get PaymentInitiated event details...")
     receipt = web3_source.eth.get_transaction_receipt(tx_hash)
     if not receipt:
         print("❌ Transaction receipt not found")
         return False
 
-    # Find the Ping event in the logs
-    # Ping event signature: Ping(address,uint256)
-    ping_topic = Web3.keccak(text="Ping(address,uint256)")
-    sender = None
+    # Find the PaymentInitiated event in the logs
+    # PaymentInitiated event signature
+    payment_topic = Web3.keccak(text="PaymentInitiated(address,address,address,uint256,bytes32)")
+    payer = None
     event_block_number = None
 
     for log in receipt["logs"]:
-        if len(log["topics"]) >= 3 and log["topics"][0] == ping_topic:
-            # Extract sender from topics[1] (remove padding)
-            sender_bytes = log["topics"][1][-20:]  # Last 20 bytes is the address
-            sender = Web3.to_checksum_address(sender_bytes)
-            # Extract block number from topics[2]
-            event_block_number = int.from_bytes(log["topics"][2], "big")
-            print(
-                f"   Found Ping event - Sender: {sender}, Block: {event_block_number}"
-            )
+        if len(log["topics"]) >= 1 and log["topics"][0] == payment_topic:
+            # Extract payer from topics[1] if present
+            if len(log["topics"]) > 1:
+                payer_bytes = log["topics"][1][-20:]  # Last 20 bytes is the address
+                payer = Web3.to_checksum_address(payer_bytes)
+            event_block_number = receipt["blockNumber"]
+            print(f"   Found PaymentInitiated event - Payer: {payer}, Block: {event_block_number}")
             break
 
-    if not sender:
-        print("❌ Ping event not found in transaction")
+    if payer is None and event_block_number is None:
+        print("❌ PaymentInitiated event not found in transaction")
         return False
 
     # Initialize utilities
@@ -100,20 +98,21 @@ async def test_proof_matches_typescript():
         rofl_util=None,  # Testing without ROFL
     )
 
-    # Create PingEvent object for proof generation
-    ping_event = PingEvent(
+    # Create PaymentEvent object for proof generation
+    payment_event = PaymentEvent(
         tx_hash=tx_hash,
         block_number=event_block_number,
-        sender=sender,
-        timestamp=receipt["blockNumber"],  # Using block number as timestamp for testing
-        ping_id=f"ping_{tx_hash[:8]}",  # Generate a test ping_id
+        payer=payer or "0x0000000000000000000000000000000000000000",
+        recipient="0x0000000000000000000000000000000000000000",
+        token="0x0000000000000000000000000000000000000000",
+        amount=0,
     )
 
-    # Generate proof with PingEvent object
+    # Generate proof with PaymentEvent object
     print(f"\n🔮 Generating proof for transaction {tx_hash}")
-    print(f"   Using sender: {sender}, block: {event_block_number}")
+    print(f"   Using block: {event_block_number}")
     try:
-        python_proof = await proof_manager.generate_proof(ping_event)
+        python_proof = await proof_manager.generate_proof(payment_event)
         print("✅ Proof generated successfully")
     except Exception as e:
         print(f"❌ Failed to generate proof: {e}")
@@ -244,12 +243,13 @@ async def test_proof_generation_errors():
     # Test with invalid transaction hash
     print("\n📍 Testing with invalid transaction hash...")
     try:
-        invalid_event = PingEvent(
+        invalid_event = PaymentEvent(
             tx_hash="0xinvalid",
             block_number=0,
-            sender="0x0000000000000000000000000000000000000000",
-            timestamp=0,
-            ping_id="invalid",
+            payer="0x0000000000000000000000000000000000000000",
+            recipient="0x0000000000000000000000000000000000000000",
+            token="0x0000000000000000000000000000000000000000",
+            amount=0,
         )
         await proof_manager.generate_proof(invalid_event)
         print("❌ Should have raised an error for invalid hash")
@@ -260,12 +260,13 @@ async def test_proof_generation_errors():
     print("\n📍 Testing with non-existent transaction...")
     try:
         fake_hash = "0x" + "0" * 64
-        fake_event = PingEvent(
+        fake_event = PaymentEvent(
             tx_hash=fake_hash,
             block_number=0,
-            sender="0x0000000000000000000000000000000000000000",
-            timestamp=0,
-            ping_id="fake",
+            payer="0x0000000000000000000000000000000000000000",
+            recipient="0x0000000000000000000000000000000000000000",
+            token="0x0000000000000000000000000000000000000000",
+            amount=0,
         )
         await proof_manager.generate_proof(fake_event)
         print("❌ Should have raised an error for non-existent tx")

@@ -1,8 +1,9 @@
 """
-Event processor for handling blockchain events.
+Event processor for handling PaymasterVault events.
 
-This module contains the logic for processing Ping and HashStored events,
-keeping the processing logic separate from the relay orchestration.
+This module contains the logic for processing PaymentInitiated events (source)
+and HashStored events (target), coordinating proof generation + relay to
+CrossChainPaymaster only after the corresponding block hash is published.
 """
 
 import contextlib
@@ -14,7 +15,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from web3 import Web3
 from web3.types import EventData
 
-from .models import PingEvent
+from .models import PaymentEvent
 from .proof_manager import ProofManager
 
 if TYPE_CHECKING:
@@ -24,10 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 class EventProcessor:
-    """Processes blockchain events for the ROFL relayer."""
+    """Processes blockchain events for the Paymaster relayer."""
 
     MAX_PROCESSED_HASHES: int = 10_000
-    MAX_PENDING_PINGS: int = 10_000
+    MAX_PENDING_PAYMENTS: int = 10_000
     MAX_STORED_HASHES: int = 10_000  # Prevent memory leak
 
     def __init__(
@@ -41,31 +42,25 @@ class EventProcessor:
             proof_manager: ProofManager instance for generating and submitting proofs
             config: RelayerConfig instance for accessing target addresses
         """
-        # State tracking with bounded collections
-        # OrderedDict provides O(1) lookups and maintains insertion order for LRU
         self.processed_tx_hashes: OrderedDict[str, None] = OrderedDict()
 
-        # Primary structure: dict for O(1) lookup by block_number
-        self.pending_pings: dict[int, list[PingEvent]] = {}
-        # Secondary structure: deque for O(1) FIFO removal of oldest pings
-        self.pending_pings_order: deque[PingEvent] = deque()
+        self.pending_payments: dict[int, list[PaymentEvent]] = {}
+        self.pending_payments_order: deque[PaymentEvent] = deque()
 
-        # Use OrderedDict with size limit to prevent memory leak
         self.stored_hashes: OrderedDict[int, str] = OrderedDict()
 
-        # Proof generation
         self.proof_manager = proof_manager
         self.config = config
 
-    async def process_ping_event(self, event: EventData) -> PingEvent | None:
+    async def process_payment_initiated(self, event: EventData) -> PaymentEvent | None:
         """
-        Process a Ping event from the source chain.
+        Process a PaymentInitiated event from the source chain.
 
         Args:
-            event: The Ping event data
+            event: The PaymentInitiated event data
 
         Returns:
-            PingEvent if successfully processed, None if skipped or error
+            PaymentEvent if successfully processed, None if skipped or error
         """
         try:
             match event.get("transactionHash"):
@@ -92,57 +87,50 @@ class EventProcessor:
             # Extract event data with type safety
             block_number: int = event.get("blockNumber", 0)
             args: Mapping[str, Any] = event.get("args", {})
-            sender: str = args.get("sender", "0x0")
-            timestamp: int = args.get("timestamp", 0)
+            payer: str = args.get("payer", "0x0")
+            recipient: str = args.get("recipient", "0x0")
+            token: str = args.get("token", "0x0")
+            amount: int = args.get("amount", 0)
 
-            # Generate ping ID using transaction hash and event args for uniqueness
-            ping_id: str = Web3.keccak(text=f"{tx_hash}-{sender}-{block_number}").hex()
-
-            # Create typed ping event
-            ping_event = PingEvent(
+            payment_event = PaymentEvent(
                 tx_hash=tx_hash,
                 block_number=block_number,
-                sender=sender,
-                timestamp=timestamp,
-                ping_id=ping_id,
+                payer=payer,
+                recipient=recipient,
+                token=token,
+                amount=amount,
             )
 
             logger.info(
-                f"Ping event detected - TX: {tx_hash[:10]}... {block_number=} "
-                f"{sender=} ID: {ping_id[:10]}..."
+                f"PaymentInitiated detected - TX: {tx_hash[:10]}... block={block_number} "
+                f"payer={payer} recipient={recipient} token={token} amount={amount}"
             )
 
-            # Check capacity and remove oldest if needed
-            if len(self.pending_pings_order) >= self.MAX_PENDING_PINGS:
-                oldest_ping = self.pending_pings_order.popleft()
+            # Enqueue payment until its block hash is stored on Sapphire
+            if len(self.pending_payments_order) >= self.MAX_PENDING_PAYMENTS:
+                oldest = self.pending_payments_order.popleft()
+                if oldest.block_number in self.pending_payments:
+                    lst = self.pending_payments[oldest.block_number]
+                    if oldest in lst:
+                        lst.remove(oldest)
+                        if not lst:
+                            del self.pending_payments[oldest.block_number]
+                logger.debug("Removed oldest pending payment due to capacity")
 
-                if oldest_ping.block_number in self.pending_pings:
-                    block_pings = self.pending_pings[oldest_ping.block_number]
-                    if oldest_ping in block_pings:
-                        block_pings.remove(oldest_ping)
-                        if not block_pings:
-                            del self.pending_pings[oldest_ping.block_number]
+            if block_number not in self.pending_payments:
+                self.pending_payments[block_number] = []
+            self.pending_payments[block_number].append(payment_event)
+            self.pending_payments_order.append(payment_event)
 
-                logger.debug(
-                    f"Removed oldest ping {oldest_ping.ping_id[:10]}... due to capacity"
-                )
-
-            # Add to both structures
-            if block_number not in self.pending_pings:
-                self.pending_pings[block_number] = []
-            self.pending_pings[block_number].append(ping_event)
-
-            self.pending_pings_order.append(ping_event)
-
-            return ping_event
+            return payment_event
 
         except Exception as e:
-            logger.error(f"Error processing ping event: {e}", exc_info=True)
+            logger.error(f"Error processing PaymentInitiated event: {e}", exc_info=True)
             return None
 
     async def process_hash_stored(self, event: EventData) -> tuple[int, str] | None:
         """
-        Process a HashStored event from the ROFLAdapter.
+        Process a HashStored event from the ROFLAdapter on Sapphire.
 
         Args:
             event: The HashStored event data
@@ -151,11 +139,9 @@ class EventProcessor:
             Tuple of (block_id, block_hash) if successful, None if error
         """
         try:
-            # Extract event data with pattern matching
             args: Mapping[str, Any] = event.get("args", {})
             block_id: int = args.get("id", 0)
 
-            # Handle block hash with pattern matching
             match args.get("hash", "0x0"):
                 case bytes() as hash_bytes:
                     block_hash = hash_bytes.hex()
@@ -167,20 +153,20 @@ class EventProcessor:
             # Store the hash with automatic eviction to prevent memory leak
             if len(self.stored_hashes) >= self.MAX_STORED_HASHES:
                 self.stored_hashes.popitem(last=False)
-
             self.stored_hashes[block_id] = block_hash
 
             logger.info(f"Hash stored - Block {block_id}: {block_hash[:10]}...")
 
-            matching_pings: list[PingEvent] = self.pending_pings.get(block_id, [])
-            if matching_pings:
+            matching_payments: list[PaymentEvent] = self.pending_payments.get(
+                block_id, []
+            )
+
+            if matching_payments and self.proof_manager and self.config:
                 logger.info(
-                    f"Found {len(matching_pings)} pings ready for block {block_id}"
+                    f"Found {len(matching_payments)} payments ready for block {block_id}"
                 )
-                # Process matched events with proof generation
-                if self.proof_manager and self.config:
-                    for ping in matching_pings:
-                        await self.process_matched_events(ping)
+                for p in list(matching_payments):
+                    await self.process_matched_payment(p)
 
             return (block_id, block_hash)
 
@@ -206,12 +192,12 @@ class EventProcessor:
 
             self.processed_tx_hashes[tx_hash] = None
 
-    async def process_matched_events(self, ping_event: PingEvent) -> None:
+    async def process_matched_payment(self, payment_event: PaymentEvent) -> None:
         """
-        Process matched Ping and HashStored events by generating and submitting proof.
+        Generate and submit a proof for a PaymentInitiated event.
 
         Args:
-            ping_event: The Ping event to process
+            payment_event: The payment event to process
         """
         try:
             if not self.proof_manager or not self.config:
@@ -220,30 +206,29 @@ class EventProcessor:
                 )
                 return
 
-            receiver_address = self.config.target_chain.ping_receiver_address
+            paymaster_address = self.config.target_chain.paymaster_address
             logger.info(
-                f"Processing proof for Ping {ping_event.ping_id[:10]}... to receiver {receiver_address}"
+                f"Processing proof for PaymentInitiated to CrossChainPaymaster {paymaster_address}"
             )
 
             # Generate and submit proof
-            tx_hash = await self.proof_manager.process_ping_event(
-                ping_event, receiver_address
+            tx_hash = await self.proof_manager.process_payment_event(
+                payment_event, paymaster_address
             )
 
             logger.info(f"Proof submitted successfully: {tx_hash}")
-
-            block_pings = self.pending_pings.get(ping_event.block_number, [])
-            if ping_event in block_pings:
-                block_pings.remove(ping_event)
-                if not block_pings:
-                    del self.pending_pings[ping_event.block_number]
-
+            # Remove from pending structures
+            block_payments = self.pending_payments.get(payment_event.block_number, [])
+            if payment_event in block_payments:
+                block_payments.remove(payment_event)
+                if not block_payments:
+                    del self.pending_payments[payment_event.block_number]
             with contextlib.suppress(ValueError):
-                self.pending_pings_order.remove(ping_event)
+                self.pending_payments_order.remove(payment_event)
 
         except Exception as e:
             logger.error(
-                f"Failed to process proof for Ping {ping_event.ping_id[:10]}...: {e}",
+                f"Failed to process proof for PaymentInitiated: {e}",
                 exc_info=True,
             )
 
@@ -256,6 +241,6 @@ class EventProcessor:
         """
         return {
             "processed_hashes": len(self.processed_tx_hashes),
-            "pending_pings": len(self.pending_pings_order),
+            "pending_payments": len(self.pending_payments_order),
             "stored_hashes": len(self.stored_hashes),
         }

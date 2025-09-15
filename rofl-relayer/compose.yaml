@@ -11,13 +11,13 @@ services:
       PYTHONUNBUFFERED: 1  # Disable output buffering for immediate log visibility
       
       # Source chain configuration (Ethereum Sepolia)
-      SOURCE_RPC_URL: ${SOURCE_RPC_URL:-}  # Required - Ethereum RPC endpoint
-      PING_SENDER_ADDRESS: ${PING_SENDER_ADDRESS:-}  # Required - PingSender contract address
+      SOURCE_RPC_URL: ${SOURCE_RPC_URL:-}  # Required - Source chain RPC endpoint
+      PAYMASTER_VAULT_ADDRESS: ${PAYMASTER_VAULT_ADDRESS:-}  # Required - PaymasterVault contract address
       
       # Target chain configuration (Oasis Sapphire)
       TARGET_RPC_URL: ${TARGET_RPC_URL:-https://testnet.sapphire.oasis.io}
-      PING_RECEIVER_ADDRESS: ${PING_RECEIVER_ADDRESS:-}  # Required - PingReceiver contract address
-      ROFL_ADAPTER_ADDRESS: ${ROFL_ADAPTER_ADDRESS:-}  # Required - ROFLAdapter contract address
+      PAYMASTER_PROXY_ADDRESS: ${PAYMASTER_PROXY_ADDRESS:-}  # Required - CrossChainPaymaster contract address
+      ROFL_ADAPTER_ADDRESS: ${ROFL_ADAPTER_ADDRESS:-}  # Required - ROFLAdapter for HashStored
     
     restart: on-failure
     volumes:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Test suite for the ROFL Relayer event monitoring functionality.
+Test suite for the Paymaster Relayer event monitoring functionality.
 """
 
 import asyncio
@@ -24,11 +24,13 @@ async def test_polling_listener_structure():
         {
             "anonymous": False,
             "inputs": [
-                {"indexed": True, "name": "sender", "type": "address"},
-                {"indexed": True, "name": "timestamp", "type": "uint256"},
-                {"indexed": False, "name": "blockNumber", "type": "uint256"},
+                {"indexed": True, "name": "payer", "type": "address"},
+                {"indexed": True, "name": "recipient", "type": "address"},
+                {"indexed": True, "name": "token", "type": "address"},
+                {"indexed": False, "name": "amount", "type": "uint256"},
+                {"indexed": False, "name": "paymentId", "type": "bytes32"},
             ],
-            "name": "Ping",
+            "name": "PaymentInitiated",
             "type": "event",
         }
     ]
@@ -36,15 +38,15 @@ async def test_polling_listener_structure():
     # Create listener instance
     listener = PollingEventListener(
         rpc_url="https://ethereum-sepolia.publicnode.com",
-        contract_address="0xDCC23A03E6b6aA254cA5B0be942dD5CafC9A2299",
-        event_name="Ping",
+        contract_address="0x0000000000000000000000000000000000000000",
+        event_name="PaymentInitiated",
         abi=test_abi,
         lookback_blocks=10,
     )
 
     # Test status method
     status = listener.get_status()
-    assert status["event_name"] == "Ping"
+    assert status["event_name"] == "PaymentInitiated"
     assert not status["is_running"]
     assert status["last_processed_block"] is None
 
@@ -55,21 +57,19 @@ async def test_polling_listener_structure():
 async def test_relayer_with_real_contracts():
     """Test the relayer with real deployed contracts."""
     print("\n" + "=" * 60)
-    print("Test: ROFL Relayer with Deployed Contracts")
+    print("Test: Paymaster Relayer with Deployed Contracts")
     print("=" * 60)
 
     # Set up environment with real contract addresses
     os.environ["SOURCE_RPC_URL"] = "https://ethereum-sepolia.publicnode.com"
     os.environ["TARGET_RPC_URL"] = "https://testnet.sapphire.oasis.io"
-    os.environ["PING_SENDER_ADDRESS"] = "0xDCC23A03E6b6aA254cA5B0be942dD5CafC9A2299"
-    os.environ["PING_RECEIVER_ADDRESS"] = "0x1f54b7AF3A462aABed01D5910a3e5911e76D4B51"
-    os.environ["ROFL_ADAPTER_ADDRESS"] = "0x9f983F759d511D0f404582b0bdc1994edb5db856"
+    os.environ["PAYMASTER_VAULT_ADDRESS"] = "0x0000000000000000000000000000000000000000"
+    os.environ["PAYMASTER_PROXY_ADDRESS"] = "0x0000000000000000000000000000000000000000"
     os.environ["PRIVATE_KEY"] = "0x" + "0" * 64  # Dummy key for testing
 
-    print(f"PingSender: {os.environ['PING_SENDER_ADDRESS']}")
-    print(f"ROFLAdapter: {os.environ['ROFL_ADAPTER_ADDRESS']}")
-    print("\nNote: Looking back 100 blocks for any recent Ping events...")
-    print("To generate events, run: bunx hardhat send-ping --network eth-sepolia")
+    print(f"PaymasterVault: {os.environ['PAYMASTER_VAULT_ADDRESS']}")
+    print("\nNote: Looking back 100 blocks for any recent PaymentInitiated events...")
+    print("To generate events, run: hardhat pay:deposit on the source chain")
 
     # Create relayer instance using factory method
     relayer = ROFLRelayer.from_env(local_mode=True)
@@ -89,13 +89,13 @@ async def test_relayer_with_real_contracts():
     await asyncio.gather(stop_task, run_task, return_exceptions=True)
 
     # Validate that the relayer initialized correctly
-    assert relayer.ping_listener is not None
+    assert relayer.payment_listener is not None
     assert relayer.hash_listener is not None
 
-    print("\n[PASS] ROFL Relayer initialized and ran successfully")
+    print("\n[PASS] Paymaster Relayer initialized and ran successfully")
     # Get stats from the event processor
     stats = relayer.event_processor.get_stats()
-    print(f"   - Pending pings: {stats['pending_pings']}")
+    print(f"   - Pending payments: {stats['pending_payments']}")
     print(f"   - Processed hashes: {stats['processed_hashes']}")
     print(f"   - Stored hashes: {stats['stored_hashes']}")
 

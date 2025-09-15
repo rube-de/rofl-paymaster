@@ -21,7 +21,7 @@ RUN uv sync --frozen
 
 # Copy source code
 COPY rofl_relayer/ ./rofl_relayer/
-COPY contracts/ ./contracts/
+COPY abis/ ./abis/
 
 # Run the relayer using module execution
 ENTRYPOINT ["uv", "run", "python", "-m", "rofl_relayer"]
