@@ -210,11 +210,12 @@ class Config(BaseSettings):
     version: str = Field("0.1.0", description="Application version")
     debug: bool = Field(False, description="Debug mode")
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        env_nested_delimiter = "__"
-        case_sensitive = False
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "env_nested_delimiter": "__",
+        "case_sensitive": False
+    }
 
     @model_validator(mode="after")
     def validate_chain_ids(self):
