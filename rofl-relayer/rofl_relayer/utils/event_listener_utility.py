@@ -215,10 +215,9 @@ class EventListenerUtility:
                 await self.event_callback(event_data)
 
         except Exception as e:
-            self.logger.error(f"Error processing subscription event: {e}")
-            import traceback
-
-            traceback.print_exc()
+            self.logger.error(
+                f"Error processing subscription event: {e}", exc_info=True
+            )
 
     # Note: Connection health monitoring is now handled automatically by the subscription manager
 

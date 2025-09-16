@@ -78,7 +78,6 @@ class MonitoringConfig:
                 f"Batch size too large (max 100), got {self.process_batch_size}"
             )
 
-
 @dataclass(frozen=True, slots=True)
 class RelayerConfig:
     """Main configuration class for the ROFL Relayer."""
